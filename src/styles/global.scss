@@ -1,0 +1,39 @@
+$primary: #376AF6; 
+$secondary: #E2F4FD;
+
+$font-color: #1B115C;
+$hover-color:#2B59B3;
+
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import 'bootstrap/scss/bootstrap';
+
+/* Global Resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-style: none;
+    list-style-type: none;
+  }
+  
+  html {
+    font-size: 16px;
+    background-color: #f5f5f5;
+  }
+  
+  html,
+  body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    scroll-behavior: smooth;
+    color: $font-color;
+  }
+
+  img {
+    object-fit: cover;
+  }
+
+  a {
+    color: $font-color; 
+    text-decoration: none; 
+  }

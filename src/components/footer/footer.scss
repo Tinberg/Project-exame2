@@ -1,0 +1,10 @@
+@import '../../styles/global';
+
+footer a {
+    color: $font-color; 
+  
+    &:hover {
+      color: $hover-color; 
+      text-decoration: underline; 
+    }
+  }
