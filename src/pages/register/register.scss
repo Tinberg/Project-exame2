@@ -1,0 +1,13 @@
+@import "../../styles/global.scss";
+
+.registerBackground {
+  background-image: url("../../assets/images/register/register-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+}
+
+.card.transparent-card {
+    background-color: rgba($secondary, 0.45);
+    backdrop-filter: blur(25px); 
+  }

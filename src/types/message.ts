@@ -1,6 +1,11 @@
-export type MessageType = "success" | "danger";
+export type MessageType = 'success' | 'error' | 'info' | 'warning';
+
+export interface MessageOptions {
+  duration?: number; 
+}
 
 export interface Message {
-  text: string;
   type: MessageType;
+  content: string;
+  options?: MessageOptions;
 }

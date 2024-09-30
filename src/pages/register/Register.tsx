@@ -1,24 +1,22 @@
 import React, { useState } from "react";
+import "./register.scss";
 import { registerUser } from "../../services/api/endpoints/auth";
 import { useNavigate, Link } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import * as Yup from "yup";
-import {
-  Form,
-  Button,
-  Card,
-  Container,
-  Row,
-  Col,
-  Alert,
-} from "react-bootstrap";
+import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
+import { useMessage } from "../../hooks/useMessage";
+import Message from "../../components/message/message";
 
 // Yup Schema for validation
 const registrationSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
   email: Yup.string()
     .email("Invalid email format")
-    .matches(/@stud.noroff.no$/, "Email must be a valid stud.noroff.no address")
+    .matches(
+      /@stud\.noroff\.no$/,
+      "Email must be a valid stud.noroff.no address"
+    )
     .required("Email is required"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
@@ -30,13 +28,15 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // Custom hook for managing messages (errors, success)
+  const { message, showMessage, clearMessage } = useMessage();
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
+    clearMessage();
 
     const formData = { username, email, password };
 
@@ -56,17 +56,20 @@ const Register: React.FC = () => {
       console.log("Register response:", registerResponse);
 
       // Navigate to login with success state
-      navigate("/login", { state: { successMessage: "Registration successful! Please log in." } });
-    } catch (err: any) {
+      navigate("/login", {
+        state: { successMessage: "Registration successful! Please log in." },
+      });
+    } catch (err: unknown) {
       if (err instanceof Yup.ValidationError) {
-        setError(err.errors.join(", "));
+        showMessage("error", err.errors.join(", "));
       } else if (axios.isAxiosError(err)) {
         const axiosError = err as AxiosError<{ message: string }>;
-        setError(
-          axiosError.response?.data?.message || "Registration error occurred"
+        showMessage(
+          "error",
+          axiosError.response?.data?.message || "Registration failed: Email or username is already in use. Please try again."
         );
       } else {
-        setError("An unexpected error occurred");
+        showMessage("error", "Registration failed: Server error. Please try again later.");
       }
     } finally {
       setLoading(false);
@@ -76,12 +79,12 @@ const Register: React.FC = () => {
   return (
     <Container
       fluid
-      className="d-flex justify-content-center align-items-center vh-100"
+      className="d-flex justify-content-center align-items-center vh-100 registerBackground"
     >
       <Row className="w-100">
         <Col xs={12} md="auto" className="mx-auto">
-          <Card className="shadow">
-            <Card.Body className="py-4 px-md-4 bg-secondary">
+          <Card className="shadow transparent-card">
+            <Card.Body className="py-4 px-md-4 ">
               <h2 className="text-center mb-4">Register to Holidaze</h2>
               <p className="text-center">
                 Join Holidaze! Sign up to book stunning venues or list and
@@ -120,13 +123,9 @@ const Register: React.FC = () => {
                     required
                   />
                 </Form.Group>
-
-                {error && (
-                  <Alert variant="danger" className="mt-3">
-                    {error}
-                  </Alert>
+                {message && (
+                  <Message message={message} onClose={clearMessage} />
                 )}
-
                 <div className="d-grid mt-3">
                   <Button variant="primary" type="submit" disabled={loading}>
                     {loading ? "Registering..." : "Register"}
@@ -147,5 +146,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-
-

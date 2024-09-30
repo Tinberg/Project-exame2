@@ -1,2 +1,2 @@
-export * from './endpoints';
-export * from './tokenService';
+export * from "./endpoints";
+export * from "./authService";

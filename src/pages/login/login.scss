@@ -1,0 +1,13 @@
+@import "../../styles/global.scss";
+
+.loginBackground {
+  background-image: url("../../assets/images/login/login-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+}
+
+.card.transparent-card {
+    background-color: rgba($secondary, 0.45);
+    backdrop-filter: blur(25px); 
+  }

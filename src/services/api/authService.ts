@@ -22,8 +22,22 @@ export const setAccessToken = (accessToken: string): void => {
     localStorage.removeItem('userName');
   };
   
-  // Clear data on logout
-  export const clearAuthData = (): void => {
-    clearAccessToken();
-    clearUserName();
-  };
+// Avatar URL
+export const setAvatarUrl = (avatarUrl: string): void => {
+  localStorage.setItem("avatarUrl", avatarUrl);
+};
+
+export const getAvatarUrl = (): string | null => {
+  return localStorage.getItem("avatarUrl");
+};
+
+export const clearAvatarUrl = (): void => {
+  localStorage.removeItem("avatarUrl");
+};
+
+// For logOut
+export const clearAuthData = (): void => {
+  clearAccessToken();
+  clearUserName();
+  clearAvatarUrl();
+};

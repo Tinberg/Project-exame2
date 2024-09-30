@@ -23,23 +23,17 @@ function Footer() {
                 <Link to="/venues">All Venues</Link>
               </li>
               <li>
-                <Link to="/about">About</Link>
+                <Link to="/about">About Us</Link>
               </li>
             </ul>
           </div>
           {/* Terms and Privacy Section */}
           <div className="col-md-3">
-            <p className="text-start fs-5">Terms and Privacy</p>
+            <p className="text-start fs-5">Terms & Privacy</p>
             <ul className="list-unstyled text-start">
-              <li>
-                <Link to="/privacy">Privacy Statement</Link>
-              </li>
-              <li>
-                <Link to="/privacy-policy">Privacy in Holidaze</Link>
-              </li>
-              <li>
-                <Link to="/privacy-settings">Privacy Settings</Link>
-              </li>
+              <li>Privacy Statement</li>
+              <li>Privacy in Holidaze</li>
+              <li>Privacy Settings</li>
             </ul>
           </div>
           {/* Get Help Section */}

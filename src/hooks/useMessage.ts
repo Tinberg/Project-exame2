@@ -1,32 +1,31 @@
-import { useState, useEffect } from "react";
-import { Message, MessageType } from "../types/message"; // Import the interface and type
 
-export const useMessage = (
-  initialMessage: string | null = null,
-  timeout: number = 3000
-) => {
+import { useState, useEffect } from 'react';
+import { Message, MessageType, MessageOptions } from '../types/message';
+
+export const useMessage = () => {
   const [message, setMessage] = useState<Message | null>(null);
-  const [visible, setVisible] = useState<boolean>(!!initialMessage);
+
+  const showMessage = (
+    type: MessageType,
+    content: string,
+    options?: MessageOptions
+  ) => {
+    setMessage({ type, content, options });
+  };
 
   useEffect(() => {
     if (message) {
-      setVisible(true);
+      const duration = message.options?.duration ?? 5000; // Default duration
       const timer = setTimeout(() => {
-        setVisible(false);
-      }, timeout);
-
+        setMessage(null);
+      }, duration);
       return () => clearTimeout(timer);
     }
-  }, [message, timeout]);
+  }, [message]);
 
-  const showMessage = (newMessage: string, type: MessageType = "success") => {
-    setMessage({ text: newMessage, type });
-    setVisible(true);
+  const clearMessage = () => {
+    setMessage(null);
   };
 
-  const hideMessage = () => {
-    setVisible(false);
-  };
-
-  return { message, visible, showMessage, hideMessage };
+  return { message, showMessage, clearMessage };
 };
