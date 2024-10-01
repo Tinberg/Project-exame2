@@ -6,7 +6,6 @@ import Explore from "./pages/explore/Explore";
 import About from "./pages/about/About";
 import Profile from "./pages/profile/Profile";
 import MyProfile from "./pages/myProfile/MyProfile";
-import Venues from "./pages/venues/Venues";
 import VenueDetails from "./pages/venueDetails/VenueDetails";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
@@ -24,8 +23,7 @@ function App() {
             <Route path="register" element={<Register />} />
             <Route path="profile" element={<Profile />} />
             <Route path="myProfile" element={<MyProfile />} />
-            <Route path="venues" element={<Venues />} />
-            <Route path="venues/:id" element={<VenueDetails />} />
+            <Route path="venueDetails/:id" element={<VenueDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>
