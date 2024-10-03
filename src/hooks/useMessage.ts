@@ -15,7 +15,7 @@ export const useMessage = () => {
 
   useEffect(() => {
     if (message) {
-      const duration = message.options?.duration ?? 5000; // Default duration
+      const duration = message.options?.duration ?? 5000; 
       const timer = setTimeout(() => {
         setMessage(null);
       }, duration);

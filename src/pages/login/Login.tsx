@@ -1,44 +1,44 @@
 import React, { useState, useContext } from "react";
-import "./login.scss"
-import { loginUser } from "../../services/api/endpoints/auth";
+import "./login.scss";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import axios, { AxiosError } from "axios";
 import * as Yup from "yup";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
-import { ErrorResponse } from "../../schemas/auth";
 import { useMessage } from "../../hooks/useMessage";
 import Message from "../../components/message/message";
-import { UserContext } from "../../contexts/UserContext"; 
+import { UserContext } from "../../contexts/UserContext";
+import { useLoginUser } from "../../hooks/useAuth";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "../../schemas/auth";
 
 // Yup Schema for validation
 const loginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
-    .matches(
-      /@stud\.noroff\.no$/,
-      "Email must be a valid stud.noroff.no address"
-    )
+    .matches(/@stud\.noroff\.no$/, "Email must be a valid stud.noroff.no address")
     .required("Email is required"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
     .required("Password is required"),
 });
 
-// Handles user login, validates form, submits to API, and redirects to profile on success.
+// Login component
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   // success message from register (state)
   const successMessage = location.state?.successMessage;
+  
   // Custom hook for managing messages (errors, success)
   const { message, showMessage, clearMessage } = useMessage();
 
   // Get setUser from UserContext
   const { setUser } = useContext(UserContext)!;
+
+  // React Query hook for login
+  const { mutate: loginUser, status } = useLoginUser();
 
   React.useEffect(() => {
     if (successMessage) {
@@ -56,42 +56,39 @@ const Login: React.FC = () => {
     try {
       await loginSchema.validate(formData, { abortEarly: false });
 
-      setLoading(true);
+      loginUser(formData, {
+        onSuccess: (response) => {
+          const { accessToken, name, avatar } = response.data; 
+          const avatarUrl = avatar?.url || "";
 
-      const loginResponse = await loginUser(formData);
+          setUser({
+            accessToken,
+            userName: name,
+            avatarUrl,
+          });
 
-      const { accessToken, name, avatar } = loginResponse.data;
-      const avatarUrl = avatar?.url || "";
+          // Save user data to localStorage
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("userName", name);
+          localStorage.setItem("avatarUrl", avatarUrl);
 
-      // Update user state in UserContext
-      setUser({
-        accessToken,
-        userName: name,
-        avatarUrl,
+          // Navigate to userProfile
+          navigate("/myProfile");
+        },
+        onError: (error) => {
+          const axiosError = error as AxiosError<ErrorResponse>;
+          showMessage(
+            "error",
+            axiosError?.response?.data?.message || "Login failed. Please try again."
+          );
+        },
       });
-
-      console.log("Login successful:", loginResponse);
-
-      // Navigate to myProfile
-      navigate("/myProfile");
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof Yup.ValidationError) {
         showMessage("error", err.errors.join(", "));
-      } else if (axios.isAxiosError(err)) {
-        const axiosError = err as AxiosError<ErrorResponse>;
-        showMessage(
-          "error",
-          axiosError.response?.data?.message ||
-            "Login failed: Incorrect email or password. Please try again."
-        );
       } else {
-        showMessage(
-          "error",
-          "Login failed: Server error. Please try again later."
-        );
+        showMessage("error", "Login failed: Server error. Please try again later.");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -130,20 +127,20 @@ const Login: React.FC = () => {
                     required
                   />
                 </Form.Group>
+
                 {message && (
                   <Message message={message} onClose={clearMessage} />
                 )}
 
                 <div className="d-grid mt-3">
-                  <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? "Logging in..." : "Log in"}
+                  <Button variant="primary" type="submit" disabled={status === 'pending'}>
+                    {status === 'pending' ? "Logging in..." : "Log in"}
                   </Button>
                 </div>
               </Form>
               <div className="mt-3 text-center">
                 <p>
-                  Don't have an account?{" "}
-                  <Link to="/register">Sign up here.</Link>
+                  Don't have an account? <Link to="/register">Sign up here.</Link>
                 </p>
               </div>
             </Card.Body>

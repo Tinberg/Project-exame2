@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import { UserProvider } from "./contexts/UserContext";
@@ -10,23 +11,27 @@ import VenueDetails from "./pages/venueDetails/VenueDetails";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
     <UserProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="explore" element={<Explore />} />
-            <Route path="about" element={<About />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="myProfile" element={<MyProfile />} />
-            <Route path="venueDetails/:id" element={<VenueDetails />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="explore" element={<Explore />} />
+              <Route path="about" element={<About />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="myProfile" element={<MyProfile />} />
+              <Route path="venueDetails/:id" element={<VenueDetails />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </QueryClientProvider>
     </UserProvider>
   );
 }

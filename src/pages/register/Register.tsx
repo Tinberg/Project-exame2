@@ -1,38 +1,38 @@
 import React, { useState } from "react";
 import "./register.scss";
-import { registerUser } from "../../services/api/endpoints/auth";
 import { useNavigate, Link } from "react-router-dom";
-import axios, { AxiosError } from "axios";
 import * as Yup from "yup";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useMessage } from "../../hooks/useMessage";
 import Message from "../../components/message/message";
+import { useRegisterUser } from "../../hooks/useAuth"; 
+import { AxiosError } from "axios";
+import { ErrorResponse } from "../../schemas/auth";
 
 // Yup Schema for validation
 const registrationSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
   email: Yup.string()
     .email("Invalid email format")
-    .matches(
-      /@stud\.noroff\.no$/,
-      "Email must be a valid stud.noroff.no address"
-    )
+    .matches(/@stud\.noroff\.no$/, "Email must be a valid stud.noroff.no address")
     .required("Email is required"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
     .required("Password is required"),
 });
 
-// Handles user registration, validates form, submits to API, and redirects to login on success.
 const Register: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   // Custom hook for managing messages (errors, success)
   const { message, showMessage, clearMessage } = useMessage();
+
+  // Use React Query hook for registration
+  const { mutate: registerUser, status } = useRegisterUser();
+  const isLoading = status === "pending"; 
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,38 +41,38 @@ const Register: React.FC = () => {
     const formData = { username, email, password };
 
     try {
+      // Validate form data with Yup
       await registrationSchema.validate(formData, { abortEarly: false });
 
-      const payload = {
-        name: username,
-        email,
-        password,
-        venueManager: false,
-      };
-
-      setLoading(true);
-
-      const registerResponse = await registerUser(payload);
-      console.log("Register response:", registerResponse);
-
-      // Navigate to login with success state
-      navigate("/login", {
-        state: { successMessage: "Registration successful! Please log in." },
-      });
-    } catch (err: unknown) {
+      registerUser(
+        {
+          name: username,
+          email,
+          password,
+          venueManager: false,
+        },
+        {
+          onSuccess: () => {
+            // Show success message and navigate login page
+            navigate("/login", {
+              state: { successMessage: "Registration successful! Please log in." },
+            });
+          },
+          onError: (error) => {
+            const axiosError = error as AxiosError<ErrorResponse>;
+            showMessage(
+              "error",
+              axiosError?.response?.data?.message || "Registration failed. Please try again."
+            );
+          },
+        }
+      );
+    } catch (err) {
       if (err instanceof Yup.ValidationError) {
         showMessage("error", err.errors.join(", "));
-      } else if (axios.isAxiosError(err)) {
-        const axiosError = err as AxiosError<{ message: string }>;
-        showMessage(
-          "error",
-          axiosError.response?.data?.message || "Registration failed: Email or username is already in use. Please try again."
-        );
       } else {
         showMessage("error", "Registration failed: Server error. Please try again later.");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -87,8 +87,7 @@ const Register: React.FC = () => {
             <Card.Body className="py-4 px-md-4 ">
               <h2 className="text-center mb-4">Register to Holidaze</h2>
               <p className="text-center">
-                Join Holidaze! Sign up to book stunning venues or list and
-                manage your own rental spaces.
+                Join Holidaze! Sign up to book stunning venues or list and manage your own rental spaces.
               </p>
               <Form onSubmit={handleRegister}>
                 <Form.Group className="mb-3" controlId="username">
@@ -123,15 +122,18 @@ const Register: React.FC = () => {
                     required
                   />
                 </Form.Group>
+
                 {message && (
                   <Message message={message} onClose={clearMessage} />
                 )}
+
                 <div className="d-grid mt-3">
-                  <Button variant="primary" type="submit" disabled={loading}>
-                    {loading ? "Registering..." : "Register"}
+                  <Button variant="primary" type="submit" disabled={isLoading}>
+                    {isLoading ? "Registering..." : "Register"}
                   </Button>
                 </div>
               </Form>
+
               <div className="mt-3 text-center">
                 <p>
                   Already have an account? <Link to="/login">Log in here.</Link>
