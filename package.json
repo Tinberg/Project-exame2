@@ -24,6 +24,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "react-router-dom": "^6.26.2",
+    "use-debounce": "^10.0.3",
     "yup": "^1.4.0"
   },
   "devDependencies": {

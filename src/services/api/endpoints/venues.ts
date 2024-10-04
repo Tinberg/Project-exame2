@@ -3,18 +3,31 @@ import apiClient from '../client';
 import { Venue, VenueCreationData } from '../../../schemas/venue';
 
 // Get all venues
+interface PaginationMeta {
+  isFirstPage: boolean;
+  isLastPage: boolean;
+  currentPage: number;
+  previousPage: number | null;
+  nextPage: number | null;
+  pageCount: number;
+  totalCount: number;
+}
+
+// Get all venues with pagination, sorting, and filtering
 export const getVenues = async (params?: {
   _owner?: boolean;
   _bookings?: boolean;
   page?: number;
   limit?: number;
   sort?: string;
-}): Promise<Venue[]> => {
-  const response = await apiClient.get<{ data: Venue[] }>(
+  sortOrder?: 'asc' | 'desc';
+  continent?: string; // Filtering by continent
+}): Promise<{ data: Venue[]; meta: PaginationMeta }> => {
+  const response = await apiClient.get<{ data: Venue[]; meta: PaginationMeta }>(
     '/holidaze/venues',
     { params }
   );
-  return response.data.data;
+  return response.data;
 };
 
 // Get a specific venue by ID

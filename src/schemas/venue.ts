@@ -18,7 +18,21 @@ export interface Venue {
   owner?: Profile;   
   bookings?: Booking[]; 
 }
+export interface PaginationMeta {
+  isFirstPage: boolean;
+  isLastPage: boolean;
+  currentPage: number;
+  previousPage: number | null;
+  nextPage: number | null;
+  pageCount: number;
+  totalCount: number;
+}
 
+
+export interface VenuesResponse {
+  data: Venue[];
+  meta: PaginationMeta;
+}
  export interface Meta {
   wifi: boolean;
   parking: boolean;

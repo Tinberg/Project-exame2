@@ -37,7 +37,7 @@ const Login: React.FC = () => {
   // Get setUser from UserContext
   const { setUser } = useContext(UserContext)!;
 
-  // React Query hook for login
+  // Login Api call
   const { mutate: loginUser, status } = useLoginUser();
 
   React.useEffect(() => {

@@ -30,7 +30,7 @@ const Register: React.FC = () => {
   // Custom hook for managing messages (errors, success)
   const { message, showMessage, clearMessage } = useMessage();
 
-  // Use React Query hook for registration
+  // Register APi call
   const { mutate: registerUser, status } = useRegisterUser();
   const isLoading = status === "pending"; 
 

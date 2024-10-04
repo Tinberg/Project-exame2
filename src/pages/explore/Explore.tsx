@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+// components/Explore.tsx
+import { useState, useEffect, useRef, useCallback } from "react";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
-import { Venue } from "../../schemas";
-import { Card, Button, Container, Row, Col } from "react-bootstrap";
+import { Venue } from "../../schemas/venue";
+import { Card, Button, Container, Row, Col, Form } from "react-bootstrap";
 import "./explore.scss";
 import { useVenues } from "../../hooks/useVenues";
 import { useGeocode } from "../../hooks/useGeocoding";
+import { useDebounce } from "use-debounce";
 
 // Map center default
 const center = {
@@ -46,13 +48,31 @@ function Explore() {
   const [currentGeocodingVenueId, setCurrentGeocodingVenueId] = useState<
     string | null
   >(null);
+  const [sortField, setSortField] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [continentFilter, setContinentFilter] = useState<string>("");
   const navigate = useNavigate();
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
   });
 
-  const { data: venues, isLoading, isError, error } = useVenues();
+  const [debouncedContinentFilter] = useDebounce(continentFilter, 500);
+
+  const {
+    data, // InfiniteData<VenuesResponse> | undefined
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useVenues({
+    sort: sortField,
+    sortOrder,
+    continent: debouncedContinentFilter || undefined,
+  });
+
+  const venues = data?.pages.flatMap((page) => page.data) ?? [];
 
   const {
     data: latLng,
@@ -138,10 +158,43 @@ function Explore() {
     navigate(`/venueDetails/${venueId}`);
   };
 
+  // Infinite scrolling
+  const observer = useRef<IntersectionObserver>();
+  const lastVenueElementRef = useCallback(
+    (node: Element | null) => {
+      if (isFetchingNextPage) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isFetchingNextPage, fetchNextPage, hasNextPage]
+  );
+
+  // Handle sort field changes (for the <select>)
+  const handleSortFieldChange = (e: React.ChangeEvent<any>) => {
+    setSortField((e.target as HTMLSelectElement).value);
+  };
+
+  // Handle sort order changes (for the <select>)
+  const handleSortOrderChange = (e: React.ChangeEvent<any>) => {
+    setSortOrder((e.target as HTMLSelectElement).value as "asc" | "desc");
+  };
+
+  // Handle continent filter changes (for the <input>)
+  const handleContinentFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setContinentFilter(e.target.value);
+  };
+
   // Loading and error states
   if (!isLoaded) return <div>Loading Map...</div>;
   if (isLoading) return <div>Loading Venues...</div>;
-  if (isError) return <div>Error loading venues: {error.message}</div>;
+  if (error) return <div>Error loading venues: {error.message}</div>;
   if (isGeocodeError)
     return <div>Error fetching location: {geocodeError.message}</div>;
 
@@ -152,59 +205,168 @@ function Explore() {
           <h1 className="text-center">Explore Venues</h1>
         </Col>
       </Row>
+      {/* Sort and Filter Controls */}
+      <Row className="mb-3">
+        <Col md={4}>
+          <Form.Group controlId="sortField">
+            <Form.Label>Sort By</Form.Label>
+            <Form.Control
+              as="select"
+              value={sortField}
+              onChange={handleSortFieldChange}
+            >
+              <option value="name">Name</option>
+              <option value="price">Price</option>
+              <option value="maxGuests">Max Guests</option>
+            </Form.Control>
+          </Form.Group>
+        </Col>
+        <Col md={4}>
+          <Form.Group controlId="sortOrder">
+            <Form.Label>Sort Order</Form.Label>
+            <Form.Control
+              as="select"
+              value={sortOrder}
+              onChange={handleSortOrderChange}
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </Form.Control>
+          </Form.Group>
+        </Col>
+        <Col md={4}>
+          <Form.Group controlId="continentFilter">
+            <Form.Label>Filter by Continent</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter continent"
+              onChange={handleContinentFilterChange}
+            />
+          </Form.Group>
+        </Col>
+      </Row>
       <Row>
         <Col xxl={4} xl={4} lg={12} className="venues-list overflow-auto">
           <Row>
-            {venues?.map((venue) => (
-              <Col
-                md={12}
-                key={venue.id}
-                className="mb-3 d-flex align-items-stretch"
-              >
-                <Card
-                  className="h-100 w-100 d-flex flex-row"
-                  onMouseEnter={() => handleVenueHover(venue)}
-                  onClick={() => handleVenueClick(venue.id)}
-                >
-                  {venue.media?.[0]?.url && (
-                    <Card.Img
-                      variant="left"
-                      src={venue.media[0].url}
-                      alt={venue.media[0].alt || "Venue image"}
-                      className="venue-image w-50"
-                    />
-                  )}
-                  <Card.Body className="d-flex flex-column justify-content-between w-50">
-                    <Card.Title className="fw-bold">{venue.name}</Card.Title>
-                    <p>
-                      {venue.location?.country
-                        ? `${
-                            venue.location.city
-                              ? venue.location.city + ", "
-                              : ""
-                          }${venue.location.country}`
-                        : "Location not available"}
-                    </p>
-                    <p>
-                      <span className="fw-bold">Capacity:</span>{" "}
-                      {venue.maxGuests} Guests
-                    </p>
-                    <p>
-                      <span className="fw-bold">Price:</span> ${venue.price}
-                    </p>
-                    <div className="mt-auto">
-                      <Button
-                        variant="primary"
-                        className="w-100"
-                        onClick={() => handleVenueClick(venue.id)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
+            {venues.map((venue: Venue, index: number) => {
+              if (venues.length === index + 1) {
+                return (
+                  <Col
+                    md={12}
+                    key={venue.id}
+                    className="mb-3 d-flex align-items-stretch"
+                    ref={lastVenueElementRef}
+                  >
+                    <Card
+                      className="h-100 w-100 d-flex flex-row"
+                      onMouseEnter={() => handleVenueHover(venue)}
+                      onClick={() => handleVenueClick(venue.id)}
+                    >
+                      {venue.media?.[0]?.url && (
+                        <Card.Img
+                          variant="left"
+                          src={venue.media[0].url}
+                          alt={venue.media[0].alt || "Venue image"}
+                          className="venue-image w-50"
+                        />
+                      )}
+                      <Card.Body className="d-flex flex-column justify-content-between w-50">
+                        <Card.Title className="fw-bold">
+                          {venue.name}
+                        </Card.Title>
+                        <p>
+                          {venue.location?.country
+                            ? `${
+                                venue.location.city
+                                  ? venue.location.city + ", "
+                                  : ""
+                              }${venue.location.country}`
+                            : "Location not available"}
+                        </p>
+                        <p>
+                          <span className="fw-bold">Capacity:</span>{" "}
+                          {venue.maxGuests} Guests
+                        </p>
+                        <p>
+                          <span className="fw-bold">Price:</span> ${venue.price}
+                        </p>
+                        <div className="mt-auto">
+                          <Button
+                            variant="primary"
+                            className="w-100"
+                            onClick={() => handleVenueClick(venue.id)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              } else {
+                return (
+                  <Col
+                    md={12}
+                    key={venue.id}
+                    className="mb-3 d-flex align-items-stretch"
+                  >
+                    <Card
+                      className="h-100 w-100 d-flex flex-row"
+                      onMouseEnter={() => handleVenueHover(venue)}
+                      onClick={() => handleVenueClick(venue.id)}
+                    >
+                      {venue.media?.[0]?.url && (
+                        <Card.Img
+                          variant="left"
+                          src={venue.media[0].url}
+                          alt={venue.media[0].alt || "Venue image"}
+                          className="venue-image w-50"
+                        />
+                      )}
+                      <Card.Body className="d-flex flex-column justify-content-between w-50">
+                        <Card.Title className="fw-bold">
+                          {venue.name}
+                        </Card.Title>
+                        <p>
+                          {venue.location?.city || venue.location?.country
+                            ? `${
+                                venue.location.city ? venue.location.city : ""
+                              }${
+                                venue.location.city && venue.location.country
+                                  ? ", "
+                                  : ""
+                              }${
+                                venue.location.country
+                                  ? venue.location.country
+                                  : ""
+                              }`
+                            : "Location not available"}
+                        </p>
+                        <p>
+                          <span className="fw-bold">Capacity:</span>{" "}
+                          {venue.maxGuests} Guests
+                        </p>
+                        <p>
+                          <span className="fw-bold">Price:</span> ${venue.price}
+                        </p>
+                        <div className="mt-auto">
+                          <Button
+                            variant="primary"
+                            className="w-100"
+                            onClick={() => handleVenueClick(venue.id)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              }
+            })}
+            {isFetchingNextPage && (
+              <div className="text-center my-3">Loading more venues...</div>
+            )}
           </Row>
         </Col>
 
@@ -236,14 +398,25 @@ function Explore() {
                 <Card.Body>
                   <Card.Title>{hoveredVenue.name}</Card.Title>
                   <p>
-                    {hoveredVenue.location?.country
+                    {hoveredVenue.location?.city ||
+                    hoveredVenue.location?.country
                       ? `${
                           hoveredVenue.location.city
-                            ? hoveredVenue.location.city + ", "
+                            ? hoveredVenue.location.city
                             : ""
-                        }${hoveredVenue.location.country}`
+                        }${
+                          hoveredVenue.location.city &&
+                          hoveredVenue.location.country
+                            ? ", "
+                            : ""
+                        }${
+                          hoveredVenue.location.country
+                            ? hoveredVenue.location.country
+                            : ""
+                        }`
                       : "Location not available"}
                   </p>
+
                   <Button
                     variant="primary"
                     className="w-100"
@@ -260,5 +433,7 @@ function Explore() {
     </Container>
   );
 }
-
 export default Explore;
+
+
+

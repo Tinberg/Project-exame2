@@ -1,4 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// React-query
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  QueryFunctionContext,
+} from "@tanstack/react-query";
+// API calls
 import {
   getVenues,
   getVenueById,
@@ -7,19 +15,28 @@ import {
   deleteVenue,
   searchVenues,
 } from "../services/api/endpoints/venues";
-import { Venue, VenueCreationData } from "../schemas/venue";
+// Schemas
+import { Venue, VenueCreationData, VenuesResponse } from "../schemas/venue";
 
-// Get all venues
+// Get all venues with infinite scroll
 export const useVenues = (params?: {
   _owner?: boolean;
   _bookings?: boolean;
-  page?: number;
-  limit?: number;
   sort?: string;
+  sortOrder?: "asc" | "desc";
+  continent?: string;
 }) => {
-  return useQuery<Venue[], Error>({
+  return useInfiniteQuery<VenuesResponse, Error>({
     queryKey: ["venues", params],
-    queryFn: () => getVenues(params),
+    queryFn: async ({ pageParam = 1 }: QueryFunctionContext) =>
+      getVenues({
+        ...params,
+        page: pageParam as number,
+        limit: 20,
+      }),
+    getNextPageParam: (lastPage: VenuesResponse) =>
+      lastPage.meta.nextPage ?? undefined,
+    initialPageParam: 1,
   });
 };
 
