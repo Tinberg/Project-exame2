@@ -1,34 +1,25 @@
-// components/Explore.tsx
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import { useNavigate } from "react-router-dom";
 import { Venue } from "../../schemas/venue";
-import { Card, Button, Container, Row, Col, Form } from "react-bootstrap";
-import "./explore.scss";
+import VenueListCard from "../../components/cards/venueListCard/VenueListCard";
+import VenueMapCard from "../../components/cards/venueMapCard/VenueMapCard";
+import { Alert, Container, Row, Col, Form } from "react-bootstrap";
 import { useVenues } from "../../hooks/useVenues";
 import { useGeocode } from "../../hooks/useGeocoding";
-import { useDebounce } from "use-debounce";
-
-// Map center default
-const center = {
-  lat: 59.911491,
-  lng: 10.757933,
-};
-
-// Function to validate coordinates
-const isValidCoordinate = (lat: number, lng: number): boolean => {
-  return (
-    lat !== 0 &&
-    lng !== 0 &&
-    lat >= -90 &&
-    lat <= 90 &&
-    lng >= -180 &&
-    lng <= 180
-  );
-};
+import "./explore.scss";
+import { sortOptions, continents, center, isValidCoordinate } from "./exploreUtils";
 
 function Explore() {
-  // State for cached geocoded venues
+  // State for sorting and filter
+  const [selectedSortOption, setSelectedSortOption] = useState<string>(
+    sortOptions[0].value
+  );
+  const [sortField, setSortField] = useState<string>(sortOptions[0].sortField);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    sortOptions[0].sortOrder
+  );
+  // Geocoded venue state from session storage
   const [geocodedVenues, setGeocodedVenues] = useState<{
     [venueId: string]: { lat: number; lng: number };
   }>(() => {
@@ -40,6 +31,7 @@ function Explore() {
     }
   });
 
+  // State for hovered venue details and geocoding
   const [hoveredVenue, setHoveredVenue] = useState<Venue | null>(null);
   const [hoveredLatLng, setHoveredLatLng] = useState<{
     lat: number;
@@ -48,117 +40,48 @@ function Explore() {
   const [currentGeocodingVenueId, setCurrentGeocodingVenueId] = useState<
     string | null
   >(null);
-  const [sortField, setSortField] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [continentFilter, setContinentFilter] = useState<string>("");
+  const [userInteracted, setUserInteracted] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // Load Google Maps script
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
   });
 
-  const [debouncedContinentFilter] = useDebounce(continentFilter, 500);
-
+  // Fetch venues based on sort
   const {
-    data, // InfiniteData<VenuesResponse> | undefined
+    data,
     error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isFetching,
   } = useVenues({
     sort: sortField,
     sortOrder,
-    continent: debouncedContinentFilter || undefined,
   });
 
-  const venues = data?.pages.flatMap((page) => page.data) ?? [];
-
-  const {
-    data: latLng,
-    isError: isGeocodeError,
-    error: geocodeError,
-  } = useGeocode(
-    hoveredVenue && currentGeocodingVenueId === hoveredVenue.id
-      ? {
-          address: hoveredVenue.location?.address,
-          city: hoveredVenue.location?.city,
-          country: hoveredVenue.location?.country,
-          continent: hoveredVenue.location?.continent,
-        }
-      : {}
+  // Memo venue list to optimize rendering
+  const venues = useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data]
   );
 
-  // Update geocoded venues when latLng changes
-  useEffect(() => {
-    if (hoveredVenue && currentGeocodingVenueId === hoveredVenue.id) {
-      if (latLng) {
-        const updatedLatLng = { lat: latLng.lat, lng: latLng.lng };
-        setHoveredLatLng(updatedLatLng);
-        setGeocodedVenues((prev) => {
-          const updatedVenues = { ...prev, [hoveredVenue.id]: updatedLatLng };
-          sessionStorage.setItem(
-            "geocodedVenues",
-            JSON.stringify(updatedVenues)
-          );
-          return updatedVenues;
-        });
-      } else {
-        // Geocoding failed, set hoveredLatLng to null
-        setHoveredLatLng(null);
-      }
-      setCurrentGeocodingVenueId(null);
+  // Filter venues based on selected continentFilter
+  const filteredVenues = useMemo(() => {
+    if (!continentFilter) {
+      return venues;
     }
-  }, [latLng, hoveredVenue, currentGeocodingVenueId]);
+    return venues.filter(
+      (venue) =>
+        (venue.location?.continent?.toLowerCase() || "") ===
+        continentFilter.toLowerCase()
+    );
+  }, [venues, continentFilter]);
 
-  // Handle venue hover
-  const handleVenueHover = (venue: Venue) => {
-    if (window.innerWidth < 1200) {
-      return;
-    }
-
-    setHoveredVenue(venue); // Always set the hovered venue
-
-    if (geocodedVenues[venue.id]) {
-      console.log(`Using cached location for venue ${venue.id}`);
-      setHoveredLatLng(geocodedVenues[venue.id]);
-      setCurrentGeocodingVenueId(null);
-    } else if (
-      venue.location?.lat != null &&
-      venue.location?.lng != null &&
-      isValidCoordinate(venue.location.lat, venue.location.lng)
-    ) {
-      const latLng = { lat: venue.location.lat, lng: venue.location.lng };
-      console.log(`Using existing location for venue ${venue.id}`);
-      setHoveredLatLng(latLng);
-      setGeocodedVenues((prev) => {
-        const updatedVenues = { ...prev, [venue.id]: latLng };
-        sessionStorage.setItem("geocodedVenues", JSON.stringify(updatedVenues));
-        return updatedVenues;
-      });
-      setCurrentGeocodingVenueId(null);
-    } else if (
-      venue.location?.address ||
-      venue.location?.city ||
-      venue.location?.country ||
-      venue.location?.continent
-    ) {
-      console.log(`Calling Geocoding API for venue ${venue.id}`);
-      setCurrentGeocodingVenueId(venue.id);
-    } else {
-      // Venue has no valid location data; remove the marker
-      console.log(`No valid location data for venue ${venue.id}`);
-      setHoveredLatLng(null);
-      setCurrentGeocodingVenueId(null);
-    }
-  };
-
-  // Handle venue click
-  const handleVenueClick = (venueId: string) => {
-    navigate(`/venueDetails/${venueId}`);
-  };
-
-  // Infinite scrolling
+  // Infinite scrolling load more venues
   const observer = useRef<IntersectionObserver>();
   const lastVenueElementRef = useCallback(
     (node: Element | null) => {
@@ -174,208 +97,265 @@ function Explore() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
-  // Handle sort field changes (for the <select>)
-  const handleSortFieldChange = (e: React.ChangeEvent<any>) => {
-    setSortField((e.target as HTMLSelectElement).value);
+  // ensure enough venues are loaded t match filter criteria
+  const [fetchAttempted, setFetchAttempted] = useState(false);
+
+  useEffect(() => {
+    if (
+      filteredVenues.length < 20 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetching &&
+      !fetchAttempted
+    ) {
+      fetchNextPage();
+      setFetchAttempted(true);
+    }
+  }, [
+    filteredVenues,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    fetchAttempted,
+    fetchNextPage,
+  ]);
+
+  // Geocode the venue if needed
+  const {
+    data: latLng,
+    isError: isGeocodeError,
+    error: geocodeError,
+  } = useGeocode(
+    hoveredVenue && currentGeocodingVenueId === hoveredVenue.id
+      ? {
+          address: hoveredVenue.location?.address,
+          city: hoveredVenue.location?.city,
+          country: hoveredVenue.location?.country,
+          continent: hoveredVenue.location?.continent,
+        }
+      : {}
+  );
+
+  // Update geocoded venues state and session storage
+  useEffect(() => {
+    if (hoveredVenue && currentGeocodingVenueId === hoveredVenue.id) {
+      if (isGeocodeError) {
+        setHoveredLatLng(null);
+      } else if (latLng) {
+        const updatedLatLng = { lat: latLng.lat, lng: latLng.lng };
+        setHoveredLatLng(updatedLatLng);
+        setGeocodedVenues((prev) => {
+          const updatedVenues = { ...prev, [hoveredVenue.id]: updatedLatLng };
+          sessionStorage.setItem(
+            "geocodedVenues",
+            JSON.stringify(updatedVenues)
+          );
+          return updatedVenues;
+        });
+        setCurrentGeocodingVenueId(null);
+      }
+    }
+  }, [latLng, hoveredVenue, currentGeocodingVenueId, isGeocodeError]);
+
+  // Handle venue hover to show its location on the map
+  const handleVenueHover = (venue: Venue) => {
+    if (window.innerWidth < 1200) {
+      return;
+    }
+
+    setUserInteracted(true);
+    setHoveredVenue(venue);
+
+    if (geocodedVenues[venue.id]) {
+      const cachedLatLng = geocodedVenues[venue.id];
+      if (isValidCoordinate(cachedLatLng.lat, cachedLatLng.lng)) {
+        setHoveredLatLng(cachedLatLng);
+      } else {
+        setHoveredLatLng(null);
+      }
+      setCurrentGeocodingVenueId(null);
+    } else if (
+      venue.location?.lat != null &&
+      venue.location?.lng != null &&
+      isValidCoordinate(venue.location.lat, venue.location.lng)
+    ) {
+      const latLng = { lat: venue.location.lat, lng: venue.location.lng };
+      setHoveredLatLng(latLng);
+      setGeocodedVenues((prev) => {
+        const updatedVenues = { ...prev, [venue.id]: latLng };
+        sessionStorage.setItem("geocodedVenues", JSON.stringify(updatedVenues));
+        return updatedVenues;
+      });
+      setCurrentGeocodingVenueId(null);
+    } else if (
+      venue.location?.address ||
+      venue.location?.city ||
+      venue.location?.country ||
+      venue.location?.continent
+    ) {
+      setHoveredLatLng(null);
+      setCurrentGeocodingVenueId(venue.id);
+    } else {
+      setHoveredLatLng(null);
+      setCurrentGeocodingVenueId(null);
+    }
   };
 
-  // Handle sort order changes (for the <select>)
-  const handleSortOrderChange = (e: React.ChangeEvent<any>) => {
-    setSortOrder((e.target as HTMLSelectElement).value as "asc" | "desc");
+  // Navigate to venue details page
+  const handleVenueClick = (venueId: string) => {
+    navigate(`/venueDetails/${venueId}`);
   };
 
-  // Handle continent filter changes (for the <input>)
+  // Handle sorting changes
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValue = e.target.value;
+    setSelectedSortOption(selectedValue);
+    const selectedOption = sortOptions.find(
+      (option) => option.value === selectedValue
+    );
+    if (selectedOption) {
+      setSortField(selectedOption.sortField);
+      setSortOrder(selectedOption.sortOrder);
+    }
+  };
+
+  // Handle continent filter change
   const handleContinentFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setContinentFilter(e.target.value);
   };
 
-  // Loading and error states
-  if (!isLoaded) return <div>Loading Map...</div>;
-  if (isLoading) return <div>Loading Venues...</div>;
-  if (error) return <div>Error loading venues: {error.message}</div>;
-  if (isGeocodeError)
-    return <div>Error fetching location: {geocodeError.message}</div>;
+  // Show loading or error messages
+  if (!isLoaded) {
+    return (
+      <Alert variant="info" className="text-center">
+        Loading Map...
+      </Alert>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Alert variant="info" className="text-center">
+        Loading Venues...
+      </Alert>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="danger" className="text-center">
+        We’re having trouble loading venues right now. Please try again later.
+      </Alert>
+    );
+  }
 
   return (
     <Container fluid className="explore-container py-3">
       <Row>
         <Col>
-          <h1 className="text-center">Explore Venues</h1>
+          <h1 className="text-center mb-5">Explore Venues</h1>
         </Col>
       </Row>
-      {/* Sort and Filter Controls */}
       <Row className="mb-3">
-        <Col md={4}>
-          <Form.Group controlId="sortField">
+        <Col md={6}>
+          <Form.Group controlId="sortBy">
             <Form.Label>Sort By</Form.Label>
-            <Form.Control
-              as="select"
-              value={sortField}
-              onChange={handleSortFieldChange}
-            >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="maxGuests">Max Guests</option>
-            </Form.Control>
+            <Form.Select value={selectedSortOption} onChange={handleSortChange}>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
         </Col>
-        <Col md={4}>
-          <Form.Group controlId="sortOrder">
-            <Form.Label>Sort Order</Form.Label>
-            <Form.Control
-              as="select"
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </Form.Control>
-          </Form.Group>
-        </Col>
-        <Col md={4}>
+        <Col md={6}>
           <Form.Group controlId="continentFilter">
             <Form.Label>Filter by Continent</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter continent"
+            <Form.Select
+              value={continentFilter}
               onChange={handleContinentFilterChange}
-            />
+            >
+              <option value="">All Continents</option>
+              {continents.map((continent) => (
+                <option key={continent} value={continent}>
+                  {continent}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
         </Col>
       </Row>
       <Row>
-        <Col xxl={4} xl={4} lg={12} className="venues-list overflow-auto">
+        <Col
+          xxl={4}
+          xl={4}
+          lg={12}
+          className="venues-list overflow-auto left-card"
+        >
           <Row>
-            {venues.map((venue: Venue, index: number) => {
-              if (venues.length === index + 1) {
-                return (
-                  <Col
-                    md={12}
-                    key={venue.id}
-                    className="mb-3 d-flex align-items-stretch"
-                    ref={lastVenueElementRef}
-                  >
-                    <Card
-                      className="h-100 w-100 d-flex flex-row"
-                      onMouseEnter={() => handleVenueHover(venue)}
-                      onClick={() => handleVenueClick(venue.id)}
-                    >
-                      {venue.media?.[0]?.url && (
-                        <Card.Img
-                          variant="left"
-                          src={venue.media[0].url}
-                          alt={venue.media[0].alt || "Venue image"}
-                          className="venue-image w-50"
-                        />
-                      )}
-                      <Card.Body className="d-flex flex-column justify-content-between w-50">
-                        <Card.Title className="fw-bold">
-                          {venue.name}
-                        </Card.Title>
-                        <p>
-                          {venue.location?.country
-                            ? `${
-                                venue.location.city
-                                  ? venue.location.city + ", "
-                                  : ""
-                              }${venue.location.country}`
-                            : "Location not available"}
-                        </p>
-                        <p>
-                          <span className="fw-bold">Capacity:</span>{" "}
-                          {venue.maxGuests} Guests
-                        </p>
-                        <p>
-                          <span className="fw-bold">Price:</span> ${venue.price}
-                        </p>
-                        <div className="mt-auto">
-                          <Button
-                            variant="primary"
-                            className="w-100"
-                            onClick={() => handleVenueClick(venue.id)}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                );
-              } else {
-                return (
-                  <Col
-                    md={12}
-                    key={venue.id}
-                    className="mb-3 d-flex align-items-stretch"
-                  >
-                    <Card
-                      className="h-100 w-100 d-flex flex-row"
-                      onMouseEnter={() => handleVenueHover(venue)}
-                      onClick={() => handleVenueClick(venue.id)}
-                    >
-                      {venue.media?.[0]?.url && (
-                        <Card.Img
-                          variant="left"
-                          src={venue.media[0].url}
-                          alt={venue.media[0].alt || "Venue image"}
-                          className="venue-image w-50"
-                        />
-                      )}
-                      <Card.Body className="d-flex flex-column justify-content-between w-50">
-                        <Card.Title className="fw-bold">
-                          {venue.name}
-                        </Card.Title>
-                        <p>
-                          {venue.location?.city || venue.location?.country
-                            ? `${
-                                venue.location.city ? venue.location.city : ""
-                              }${
-                                venue.location.city && venue.location.country
-                                  ? ", "
-                                  : ""
-                              }${
-                                venue.location.country
-                                  ? venue.location.country
-                                  : ""
-                              }`
-                            : "Location not available"}
-                        </p>
-                        <p>
-                          <span className="fw-bold">Capacity:</span>{" "}
-                          {venue.maxGuests} Guests
-                        </p>
-                        <p>
-                          <span className="fw-bold">Price:</span> ${venue.price}
-                        </p>
-                        <div className="mt-auto">
-                          <Button
-                            variant="primary"
-                            className="w-100"
-                            onClick={() => handleVenueClick(venue.id)}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                );
-              }
-            })}
+            {filteredVenues.map((venue: Venue) => (
+              <VenueListCard
+                key={venue.id}
+                venue={venue}
+                onHover={handleVenueHover}
+                onClick={handleVenueClick}
+              />
+            ))}
+            {venues.length > 0 && (
+              <div
+                ref={lastVenueElementRef}
+                className="infinite-scroll-sentinel"
+              />
+            )}
             {isFetchingNextPage && (
-              <div className="text-center my-3">Loading more venues...</div>
+              <Alert variant="info" className="text-center my-3">
+                Loading more venues...
+              </Alert>
+            )}
+            {!hasNextPage &&
+              !isFetchingNextPage &&
+              filteredVenues.length > 0 && (
+                <Alert variant="info" className="text-center my-3">
+                  No more venues to load.
+                </Alert>
+              )}
+            {filteredVenues.length === 0 && !isLoading && (
+              <Alert variant="warning" className="text-center my-3">
+                No venues found for the selected continent.
+              </Alert>
             )}
           </Row>
         </Col>
-
         <Col
           xxl={8}
           xl={8}
           lg={8}
           className="map-container position-sticky d-none d-xl-block"
         >
+          {isGeocodeError && (
+            <Row>
+              <Col>
+                <Alert variant="warning" className="text-center">
+                  We’re unable to find the exact location for this venue right
+                  now.
+                  {geocodeError && ` More details: ${geocodeError.message}`}
+                </Alert>
+              </Col>
+            </Row>
+          )}
+          {!hoveredLatLng && !isGeocodeError && userInteracted && (
+            <Row>
+              <Col>
+                <Alert variant="warning" className="text-center">
+                  No valid location found for this venue. Displaying default
+                  location.
+                </Alert>
+              </Col>
+            </Row>
+          )}
           <GoogleMap
             mapContainerClassName="w-100 h-100"
             zoom={12}
@@ -385,55 +365,15 @@ function Explore() {
           </GoogleMap>
 
           {hoveredVenue && hoveredLatLng && (
-            <div className="small-venue-card position-absolute">
-              <Card>
-                {hoveredVenue.media?.[0]?.url && (
-                  <Card.Img
-                    variant="top"
-                    className="small-card-img"
-                    src={hoveredVenue.media[0].url}
-                    alt={hoveredVenue.media[0].alt || "Venue image"}
-                  />
-                )}
-                <Card.Body>
-                  <Card.Title>{hoveredVenue.name}</Card.Title>
-                  <p>
-                    {hoveredVenue.location?.city ||
-                    hoveredVenue.location?.country
-                      ? `${
-                          hoveredVenue.location.city
-                            ? hoveredVenue.location.city
-                            : ""
-                        }${
-                          hoveredVenue.location.city &&
-                          hoveredVenue.location.country
-                            ? ", "
-                            : ""
-                        }${
-                          hoveredVenue.location.country
-                            ? hoveredVenue.location.country
-                            : ""
-                        }`
-                      : "Location not available"}
-                  </p>
-
-                  <Button
-                    variant="primary"
-                    className="w-100"
-                    onClick={() => handleVenueClick(hoveredVenue.id)}
-                  >
-                    View Details
-                  </Button>
-                </Card.Body>
-              </Card>
-            </div>
+            <VenueMapCard
+              venue={hoveredVenue}
+              onViewDetails={handleVenueClick}
+            />
           )}
         </Col>
       </Row>
     </Container>
   );
 }
+
 export default Explore;
-
-
-

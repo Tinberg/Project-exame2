@@ -14,7 +14,10 @@ import { ErrorResponse } from "../../schemas/auth";
 const loginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
-    .matches(/@stud\.noroff\.no$/, "Email must be a valid stud.noroff.no address")
+    .matches(
+      /@stud\.noroff\.no$/,
+      "Email must be a valid stud.noroff.no address"
+    )
     .required("Email is required"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
@@ -30,7 +33,7 @@ const Login: React.FC = () => {
 
   // success message from register (state)
   const successMessage = location.state?.successMessage;
-  
+
   // Custom hook for managing messages (errors, success)
   const { message, showMessage, clearMessage } = useMessage();
 
@@ -58,7 +61,7 @@ const Login: React.FC = () => {
 
       loginUser(formData, {
         onSuccess: (response) => {
-          const { accessToken, name, avatar } = response.data; 
+          const { accessToken, name, avatar } = response.data;
           const avatarUrl = avatar?.url || "";
 
           setUser({
@@ -79,7 +82,8 @@ const Login: React.FC = () => {
           const axiosError = error as AxiosError<ErrorResponse>;
           showMessage(
             "error",
-            axiosError?.response?.data?.message || "Login failed. Please try again."
+            axiosError?.response?.data?.message ||
+              "Login failed. Please try again."
           );
         },
       });
@@ -87,7 +91,10 @@ const Login: React.FC = () => {
       if (err instanceof Yup.ValidationError) {
         showMessage("error", err.errors.join(", "));
       } else {
-        showMessage("error", "Login failed: Server error. Please try again later.");
+        showMessage(
+          "error",
+          "Login failed: Server error. Please try again later."
+        );
       }
     }
   };
@@ -133,14 +140,19 @@ const Login: React.FC = () => {
                 )}
 
                 <div className="d-grid mt-3">
-                  <Button variant="primary" type="submit" disabled={status === 'pending'}>
-                    {status === 'pending' ? "Logging in..." : "Log in"}
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={status === "pending"}
+                  >
+                    {status === "pending" ? "Logging in..." : "Log in"}
                   </Button>
                 </div>
               </Form>
               <div className="mt-3 text-center">
                 <p>
-                  Don't have an account? <Link to="/register">Sign up here.</Link>
+                  Don't have an account?{" "}
+                  <Link to="/register">Sign up here.</Link>
                 </p>
               </div>
             </Card.Body>

@@ -24,7 +24,6 @@ export const useVenues = (params?: {
   _bookings?: boolean;
   sort?: string;
   sortOrder?: "asc" | "desc";
-  continent?: string;
 }) => {
   return useInfiniteQuery<VenuesResponse, Error>({
     queryKey: ["venues", params],

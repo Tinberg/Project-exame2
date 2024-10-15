@@ -8,6 +8,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer bg-secondary text-center py-4 mt-auto">
       <div className="container-xxl">
@@ -95,7 +97,9 @@ function Footer() {
           </div>
         </div>
         <div className="mt-3">
-          <p className="mb-0">&copy; 2024 Holidaze. All rights reserved.</p>
+          <p className="mb-0">
+            &copy; {currentYear} Holidaze. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

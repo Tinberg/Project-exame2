@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 export const getLatLngFromGeocoding = async (
   location: Partial<{
@@ -8,12 +8,17 @@ export const getLatLngFromGeocoding = async (
     continent: string;
   }>
 ) => {
-  let locationQuery = '';
+  let locationQuery = "";
 
   if (location.address) locationQuery += location.address;
-  if (location.city) locationQuery += locationQuery ? `, ${location.city}` : location.city;
-  if (location.country) locationQuery += locationQuery ? `, ${location.country}` : location.country;
-  if (location.continent) locationQuery += locationQuery ? `, ${location.continent}` : location.continent;
+  if (location.city)
+    locationQuery += locationQuery ? `, ${location.city}` : location.city;
+  if (location.country)
+    locationQuery += locationQuery ? `, ${location.country}` : location.country;
+  if (location.continent)
+    locationQuery += locationQuery
+      ? `, ${location.continent}`
+      : location.continent;
 
   if (!locationQuery) return null;
 
@@ -34,6 +39,3 @@ export const getLatLngFromGeocoding = async (
 
   return null;
 };
-
-
-

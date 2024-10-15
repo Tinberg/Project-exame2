@@ -2,11 +2,13 @@ import React from 'react';
 import { Alert, Container, Row, Col } from 'react-bootstrap';
 import { Message as MessageType } from '../../types/message';
 
+// interface for message
 interface MessageProps {
   message: MessageType;
   onClose: () => void;
 }
 
+// displays a dismissible Bootstrap alert styled by message.type with message.content
 const Message: React.FC<MessageProps> = ({ message, onClose }) => {
   return (
     <Container>

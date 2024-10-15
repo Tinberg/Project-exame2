@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { useMessage } from "../../hooks/useMessage";
 import Message from "../../components/message/message";
-import { useRegisterUser } from "../../hooks/useAuth"; 
+import { useRegisterUser } from "../../hooks/useAuth";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
 
@@ -14,7 +14,10 @@ const registrationSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
   email: Yup.string()
     .email("Invalid email format")
-    .matches(/@stud\.noroff\.no$/, "Email must be a valid stud.noroff.no address")
+    .matches(
+      /@stud\.noroff\.no$/,
+      "Email must be a valid stud.noroff.no address"
+    )
     .required("Email is required"),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
@@ -32,7 +35,7 @@ const Register: React.FC = () => {
 
   // Register APi call
   const { mutate: registerUser, status } = useRegisterUser();
-  const isLoading = status === "pending"; 
+  const isLoading = status === "pending";
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,14 +58,17 @@ const Register: React.FC = () => {
           onSuccess: () => {
             // Show success message and navigate login page
             navigate("/login", {
-              state: { successMessage: "Registration successful! Please log in." },
+              state: {
+                successMessage: "Registration successful! Please log in.",
+              },
             });
           },
           onError: (error) => {
             const axiosError = error as AxiosError<ErrorResponse>;
             showMessage(
               "error",
-              axiosError?.response?.data?.message || "Registration failed. Please try again."
+              axiosError?.response?.data?.message ||
+                "Registration failed. Please try again."
             );
           },
         }
@@ -71,7 +77,10 @@ const Register: React.FC = () => {
       if (err instanceof Yup.ValidationError) {
         showMessage("error", err.errors.join(", "));
       } else {
-        showMessage("error", "Registration failed: Server error. Please try again later.");
+        showMessage(
+          "error",
+          "Registration failed: Server error. Please try again later."
+        );
       }
     }
   };
@@ -87,7 +96,8 @@ const Register: React.FC = () => {
             <Card.Body className="py-4 px-md-4 ">
               <h2 className="text-center mb-4">Register to Holidaze</h2>
               <p className="text-center">
-                Join Holidaze! Sign up to book stunning venues or list and manage your own rental spaces.
+                Join Holidaze! Sign up to book stunning venues or list and
+                manage your own rental spaces.
               </p>
               <Form onSubmit={handleRegister}>
                 <Form.Group className="mb-3" controlId="username">
