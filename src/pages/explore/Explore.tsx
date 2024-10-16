@@ -252,7 +252,7 @@ function Explore() {
   }
 
   return (
-    <Container fluid className="explore-container py-3">
+    <Container fluid className="explore-container pb-3">
       <Row>
         <Col>
           <h1 className="text-center mb-5">Explore Venues</h1>

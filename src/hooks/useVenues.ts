@@ -88,5 +88,6 @@ export const useSearchVenues = (query: string) => {
   return useQuery<Venue[], Error>({
     queryKey: ["venues-search", query],
     queryFn: () => searchVenues(query),
+    enabled: query.length > 0,
   });
 };

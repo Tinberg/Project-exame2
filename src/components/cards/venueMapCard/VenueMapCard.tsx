@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Button } from "react-bootstrap";
 import { Venue } from "../../../schemas/venue";
+import defaultImage from "../../../assets/images/venueImage/noVenueImage.jpg";
 import "./venueMapCard.scss";
 
 // interface for venueMapCard
@@ -14,17 +15,19 @@ const VenueMapCard: React.FC<VenueMapCardProps> = ({
   venue,
   onViewDetails,
 }) => {
+  const venueImage = venue.media?.[0]?.url || defaultImage;
   return (
     <div className="small-venue-card position-absolute">
       <Card>
-        {venue.media?.[0]?.url && (
-          <Card.Img
-            variant="top"
-            className="small-card-img"
-            src={venue.media[0].url}
-            alt={venue.media[0].alt || "Venue image"}
-          />
-        )}
+        <Card.Img
+          variant="top"
+          className="small-card-img"
+          src={venueImage}
+          alt={venue.media?.[0]?.alt || "Venue image"}
+          onError={(e) => {
+            e.currentTarget.src = defaultImage;
+          }}
+        />
         <Card.Body>
           <Card.Title>{venue.name}</Card.Title>
           <p>

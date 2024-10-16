@@ -51,7 +51,8 @@ export const useVenuesByProfile = (name: string, params?: { _bookings?: boolean,
 // Search profiles
 export const useSearchProfiles = (query: string) => {
   return useQuery<Profile[], Error>({
-    queryKey: ['profiles-search', query],
+    queryKey: ["profiles-search", query],
     queryFn: () => searchProfiles(query),
+    enabled: query.length > 0,
   });
 };

@@ -1,0 +1,25 @@
+@import "../../styles/global";
+
+.search-bar-container {
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.search-results {
+  max-height: 500px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.search-result-item {
+  cursor: pointer;
+
+  img {
+    width: 50px;
+    height: 50px;
+  }
+
+  &:hover {
+    background-color: $secondary;
+  }
+}
