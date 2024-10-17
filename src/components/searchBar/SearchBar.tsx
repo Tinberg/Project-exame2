@@ -58,23 +58,30 @@ function SearchBar() {
   };
 
   return (
-    <div className="search-bar-container px-2 my-4 w-100 position-relative" ref={searchRef}>
+    <div
+      className="search-bar-container px-2 my-4 w-100 position-relative"
+      ref={searchRef}
+    >
       <div className="search-bar position-relative w-100">
         <form className="d-flex" onSubmit={(e) => e.preventDefault()}>
-          <input
-            className="form-control me-2"
-            type="search"
-            placeholder="Search venues"
-            aria-label="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => {
-              if (searchQuery.length > 0) setShowSearchResults(true);
-            }}
-          />
-          <button className="btn btn-outline-primary" type="submit">
-            <FontAwesomeIcon icon={faSearch} />
-          </button>
+          <div className="position-relative w-100">
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="position-absolute start-0 top-50 translate-middle-y ms-3"
+            />
+            <input
+              className="form-control ps-5"
+              type="search"
+              placeholder="Search venues"
+              aria-label="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchQuery.length > 0) setShowSearchResults(true);
+              }}
+              onBlur={() => setShowSearchResults(false)}
+            />
+          </div>
         </form>
 
         {/* Search Results Dropdown */}
@@ -92,7 +99,10 @@ function SearchBar() {
                   onClick={() => handleResultClick(venue)}
                 >
                   <img
-                    src={venue.media[0]?.url || "../../assets/images/venueImage/noVenueImage.jpg"}
+                    src={
+                      venue.media[0]?.url ||
+                      "../../assets/images/venueImage/noVenueImage.jpg"
+                    }
                     alt={venue.media[0]?.alt || venue.name}
                     className="me-2 rounded"
                   />

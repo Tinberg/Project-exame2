@@ -45,4 +45,11 @@ $hover-color:#2B59B3;
     text-decoration: none; 
   }
 
+  
+
+ /* Override Bootstrap */
+  .card,
+  .card-body {
+    color: $font-color;
+  }
 

@@ -56,3 +56,7 @@ FOLDER STRUCTURE
 EXPLORE COMPONENT
 
 - filter by continent fetches all venues (if the api allowed a continent filter i wouldnt have to fetch all venues when change filter by continent, and i decided to not write more code on the client side as the explore component is already filled with code.)
+
+
+FIX
+- Font color placeholder inputs
