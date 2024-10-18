@@ -59,4 +59,6 @@ EXPLORE COMPONENT
 
 
 FIX
-- Font color placeholder inputs
+- Font color placeholder inputs?
+
+

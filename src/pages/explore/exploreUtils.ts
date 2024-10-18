@@ -69,11 +69,12 @@ export const center = {
 // Check if latitude and longitude are valid
 export const isValidCoordinate = (lat: number, lng: number): boolean => {
   return (
-    lat !== 0 &&
+    lat !== 0 && 
     lng !== 0 &&
     lat >= -90 &&
     lat <= 90 &&
     lng >= -180 &&
-    lng <= 180
+    lng <= 180 &&
+    !(lat === 90 && lng === 180) 
   );
 };

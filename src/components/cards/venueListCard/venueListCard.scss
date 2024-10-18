@@ -1,6 +1,12 @@
-.venue-image {
-    max-height: 250px;
-  }
-  .left-card {
+.left-card {
     cursor: pointer;
   }
+  // venue card hight and media for responsive 
+  .venue-card-col {
+    height: 260px; 
+  
+    @media (max-width: 575.98px) { 
+      height: 300px; 
+    }
+  }
+  

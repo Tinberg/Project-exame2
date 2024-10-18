@@ -1,7 +1,8 @@
 
 
 .map-container {
-  height: 100vh;
+  /* Adjust as needed */
+  height: calc(100vh - 75px);
   top: 75px;
   overflow: hidden;
   border-radius: 25px;

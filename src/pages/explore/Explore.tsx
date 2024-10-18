@@ -8,7 +8,12 @@ import { Alert, Container, Row, Col, Form } from "react-bootstrap";
 import { useVenues } from "../../hooks/useVenues";
 import { useGeocode } from "../../hooks/useGeocoding";
 import "./explore.scss";
-import { sortOptions, continents, center, isValidCoordinate } from "./exploreUtils";
+import {
+  sortOptions,
+  continents,
+  center,
+  isValidCoordinate,
+} from "./exploreUtils";
 
 function Explore() {
   // State for sorting and filter
@@ -289,12 +294,7 @@ function Explore() {
         </Col>
       </Row>
       <Row>
-        <Col
-          xxl={4}
-          xl={4}
-          lg={12}
-          className="venues-list overflow-auto left-card"
-        >
+        <Col xl={4} lg={12} className="venues-list overflow-auto left-card">
           <Row>
             {filteredVenues.map((venue: Venue) => (
               <VenueListCard
@@ -329,12 +329,7 @@ function Explore() {
             )}
           </Row>
         </Col>
-        <Col
-          xxl={8}
-          xl={8}
-          lg={8}
-          className="map-container position-sticky d-none d-xl-block"
-        >
+        <Col lg={8} className="map-container position-sticky d-none d-xl-block">
           {isGeocodeError && (
             <Row>
               <Col>
