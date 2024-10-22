@@ -99,7 +99,11 @@ function Header() {
                     </Link>
                   </li>
                   <li>
-                    <button className="dropdown-item" onClick={handleLogout} aria-label="Log Out">
+                    <button
+                      className="dropdown-item"
+                      onClick={handleLogout}
+                      aria-label="Log Out"
+                    >
                       <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                       Log Out
                     </button>

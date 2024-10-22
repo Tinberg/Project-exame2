@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from 'react';
-import { Message, MessageType, MessageOptions } from '../types/message';
+import { useState, useEffect } from "react";
+import { Message, MessageType, MessageOptions } from "../../types/message";
 
 export const useMessage = () => {
   const [message, setMessage] = useState<Message | null>(null);
@@ -15,7 +14,7 @@ export const useMessage = () => {
 
   useEffect(() => {
     if (message) {
-      const duration = message.options?.duration ?? 5000; 
+      const duration = message.options?.duration ?? 5000;
       const timer = setTimeout(() => {
         setMessage(null);
       }, duration);

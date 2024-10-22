@@ -1,14 +1,12 @@
-
-
 .map-container {
-  /* Adjust as needed */
   height: calc(100vh - 75px);
   top: 75px;
   overflow: hidden;
   border-radius: 25px;
 }
-// infinite scroll works across all browsers
+
 .infinite-scroll-sentinel {
   height: 1px;
   visibility: hidden;
 }
+

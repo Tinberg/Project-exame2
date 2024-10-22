@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import "./register.scss";
 import { useNavigate, Link } from "react-router-dom";
 import * as Yup from "yup";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
-import { useMessage } from "../../hooks/useMessage";
+import { useMessage } from "../../hooks/apiHooks/useMessage";
 import Message from "../../components/message/message";
-import { useRegisterUser } from "../../hooks/useAuth";
+import { useRegisterUser } from "../../hooks/apiHooks/useAuth";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
+import "./register.scss";
 
 // Yup Schema for validation
 const registrationSchema = Yup.object().shape({

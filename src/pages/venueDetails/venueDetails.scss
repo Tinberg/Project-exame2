@@ -1,0 +1,29 @@
+@import "../../styles/global";
+.overlay-bg-transparent {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+.overlay-bg-transparent .text-overlay-img {
+  font-size: 0.9rem;
+}
+.img-gallery-modal {
+    cursor: pointer;
+}
+.page-navigation {
+  button {
+    color: $font-color;
+  }
+}
+.owner-section-big {
+  margin-top: 90px;
+}
+.venue-details-container {
+  .venue-image {
+    width: 100%;
+    height: 450px;
+  }
+
+  .owner-avatar {
+    width: 100px;
+    height: 100px;
+  }
+}

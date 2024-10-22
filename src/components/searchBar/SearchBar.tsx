@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./searcBar.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { useSearchVenues } from "../../hooks/useVenues";
+import { useSearchVenues } from "../../hooks/apiHooks/useVenues";
 import { Venue } from "../../schemas/venue";
 
 function SearchBar() {
@@ -79,7 +79,6 @@ function SearchBar() {
               onFocus={() => {
                 if (searchQuery.length > 0) setShowSearchResults(true);
               }}
-              onBlur={() => setShowSearchResults(false)}
             />
           </div>
         </form>

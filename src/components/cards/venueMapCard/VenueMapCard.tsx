@@ -28,7 +28,7 @@ const VenueMapCard: React.FC<VenueMapCardProps> = ({
             e.currentTarget.src = defaultImage;
           }}
         />
-        <Card.Body>
+        <Card.Body className="bg-secondary">
           <Card.Title>{venue.name}</Card.Title>
           <p>
             {venue.location?.city || venue.location?.country

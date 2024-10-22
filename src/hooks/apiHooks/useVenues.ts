@@ -14,9 +14,9 @@ import {
   updateVenue,
   deleteVenue,
   searchVenues,
-} from "../services/api/endpoints/venues";
+} from "../../services/api/endpoints/venues";
 // Schemas
-import { Venue, VenueCreationData, VenuesResponse } from "../schemas/venue";
+import { Venue, VenueCreationData, VenuesResponse } from "../../schemas/venue";
 
 // Get all venues with infinite scroll
 export const useVenues = (params?: {
@@ -46,7 +46,7 @@ export const useVenueById = (
 ) => {
   return useQuery<Venue, Error>({
     queryKey: ["venue", id, params],
-    queryFn: () => getVenueById(id, params),
+    queryFn: () => getVenueById(id, { _owner: true, ...params }),
   });
 };
 

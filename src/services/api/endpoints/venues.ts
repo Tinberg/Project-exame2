@@ -1,6 +1,9 @@
-
-import apiClient from '../client';
-import { Venue, VenueCreationData, PaginationMeta } from '../../../schemas/venue';
+import apiClient from "../client";
+import {
+  Venue,
+  VenueCreationData,
+  PaginationMeta,
+} from "../../../schemas/venue";
 
 // Get all venues with pagination, sorting, and filtering
 export const getVenues = async (params?: {
@@ -9,10 +12,10 @@ export const getVenues = async (params?: {
   page?: number;
   limit?: number;
   sort?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }): Promise<{ data: Venue[]; meta: PaginationMeta }> => {
   const response = await apiClient.get<{ data: Venue[]; meta: PaginationMeta }>(
-    '/holidaze/venues',
+    "/holidaze/venues",
     { params }
   );
   return response.data;
@@ -28,7 +31,7 @@ export const getVenueById = async (
 ): Promise<Venue> => {
   const response = await apiClient.get<{ data: Venue }>(
     `/holidaze/venues/${id}`,
-    { params }
+    { params: { _owner: true, ...params } }
   );
   return response.data.data;
 };
@@ -38,7 +41,7 @@ export const createVenue = async (
   venueData: VenueCreationData
 ): Promise<Venue> => {
   const response = await apiClient.post<{ data: Venue }>(
-    '/holidaze/venues',
+    "/holidaze/venues",
     venueData
   );
   return response.data.data;
@@ -64,7 +67,7 @@ export const deleteVenue = async (id: string): Promise<void> => {
 // Search venues
 export const searchVenues = async (query: string): Promise<Venue[]> => {
   const response = await apiClient.get<{ data: Venue[] }>(
-    '/holidaze/venues/search',
+    "/holidaze/venues/search",
     { params: { q: query } }
   );
   return response.data.data;

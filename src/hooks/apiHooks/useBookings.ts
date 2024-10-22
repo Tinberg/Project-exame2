@@ -1,20 +1,38 @@
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBookings, getBookingById, createBooking, updateBooking, deleteBooking } from '../services/api/endpoints/bookings';
-import { Booking, BookingCreationData, BookingUpdateData } from '../schemas/booking';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getBookings,
+  getBookingById,
+  createBooking,
+  updateBooking,
+  deleteBooking,
+} from "../../services/api/endpoints/bookings";
+import {
+  Booking,
+  BookingCreationData,
+  BookingUpdateData,
+} from "../../schemas/booking";
 
 // Get all bookings
-export const useBookings = (params?: { _customer?: boolean, _venue?: boolean, page?: number, limit?: number, sort?: string }) => {
+export const useBookings = (params?: {
+  _customer?: boolean;
+  _venue?: boolean;
+  page?: number;
+  limit?: number;
+  sort?: string;
+}) => {
   return useQuery<Booking[], Error>({
-    queryKey: ['bookings', params],
+    queryKey: ["bookings", params],
     queryFn: () => getBookings(params),
   });
 };
 
 // Get a booking by ID
-export const useBookingById = (id: string, params?: { _customer?: boolean, _venue?: boolean }) => {
+export const useBookingById = (
+  id: string,
+  params?: { _customer?: boolean; _venue?: boolean }
+) => {
   return useQuery<Booking, Error>({
-    queryKey: ['booking', id, params],
+    queryKey: ["booking", id, params],
     queryFn: () => getBookingById(id, params),
   });
 };
@@ -25,7 +43,7 @@ export const useCreateBooking = () => {
   return useMutation<Booking, Error, BookingCreationData>({
     mutationFn: createBooking,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };
@@ -36,7 +54,7 @@ export const useUpdateBooking = (id: string) => {
   return useMutation<Booking, Error, BookingUpdateData>({
     mutationFn: (data) => updateBooking(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['booking', id] }); 
+      queryClient.invalidateQueries({ queryKey: ["booking", id] });
     },
   });
 };
@@ -47,7 +65,7 @@ export const useDeleteBooking = (id: string) => {
   return useMutation<void, Error>({
     mutationFn: () => deleteBooking(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] }); 
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
   });
 };

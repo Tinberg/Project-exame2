@@ -1,7 +1,7 @@
 // hooks/useAuth.ts
-import { useMutation } from '@tanstack/react-query';
-import { loginUser, registerUser } from '../services/api/endpoints/auth';
-import { AuthResponse, RegisterData, LoginData } from '../schemas/auth';
+import { useMutation } from "@tanstack/react-query";
+import { loginUser, registerUser } from "../../services/api/endpoints/auth";
+import { AuthResponse, RegisterData, LoginData } from "../../schemas/auth";
 
 // Register a new user
 export const useRegisterUser = () => {

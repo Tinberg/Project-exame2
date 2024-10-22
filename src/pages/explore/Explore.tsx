@@ -5,15 +5,15 @@ import { Venue } from "../../schemas/venue";
 import VenueListCard from "../../components/cards/venueListCard/VenueListCard";
 import VenueMapCard from "../../components/cards/venueMapCard/VenueMapCard";
 import { Alert, Container, Row, Col, Form } from "react-bootstrap";
-import { useVenues } from "../../hooks/useVenues";
-import { useGeocode } from "../../hooks/useGeocoding";
-import "./explore.scss";
+import { useVenues } from "../../hooks/apiHooks/useVenues";
+import { useGeocode } from "../../hooks/apiHooks/useGeocoding";
 import {
   sortOptions,
   continents,
   center,
   isValidCoordinate,
 } from "./exploreUtils";
+import "./explore.scss";
 
 function Explore() {
   // State for sorting and filter
@@ -257,116 +257,146 @@ function Explore() {
   }
 
   return (
-    <Container fluid className="explore-container pb-3">
-      <Row>
-        <Col>
-          <h1 className="text-center mb-5">Explore Venues</h1>
-        </Col>
-      </Row>
-      <Row className="mb-3">
-        <Col md={6}>
-          <Form.Group controlId="sortBy">
-            <Form.Label>Sort By</Form.Label>
-            <Form.Select value={selectedSortOption} onChange={handleSortChange}>
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+    <Container fluid className="explore-container pb-3 mt-5">
+      {/* Main Heading Section */}
+      <section aria-labelledby="explore-heading">
+        <Row>
+          <Col>
+            <h1 id="explore-heading" className="text-center mb-5">
+              Explore Venues
+            </h1>
+          </Col>
+        </Row>
+      </section>
+      {/* Filter and Sort Section */}
+      <section aria-labelledby="filter-section" className="mb-3">
+        <Row>
+          {/* Sort By Dropdown */}
+          <Col md={6}>
+            <Form.Group controlId="sortBy">
+              <Form.Label id="sort-by-label">Sort By</Form.Label>
+              <Form.Select
+                aria-labelledby="sort-by-label"
+                value={selectedSortOption}
+                onChange={handleSortChange}
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+
+          {/* Filter by Continent Dropdown */}
+          <Col md={6}>
+            <Form.Group controlId="continentFilter">
+              <Form.Label id="continent-filter-label">
+                Filter by Continent
+              </Form.Label>
+              <Form.Select
+                aria-labelledby="continent-filter-label"
+                value={continentFilter}
+                onChange={handleContinentFilterChange}
+              >
+                <option value="">All Continents</option>
+                {continents.map((continent) => (
+                  <option key={continent} value={continent}>
+                    {continent}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+      </section>
+
+      {/* Venues List Section */}
+      <section aria-label="List of venues">
+        <Row>
+          <Col xl={3} lg={12} className="venues-list overflow-auto left-card">
+            <Row>
+              {filteredVenues.map((venue: Venue) => (
+                <VenueListCard
+                  key={venue.id}
+                  venue={venue}
+                  onHover={handleVenueHover}
+                  onClick={handleVenueClick}
+                  aria-label={`Venue ${venue.name}`}
+                />
               ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group controlId="continentFilter">
-            <Form.Label>Filter by Continent</Form.Label>
-            <Form.Select
-              value={continentFilter}
-              onChange={handleContinentFilterChange}
-            >
-              <option value="">All Continents</option>
-              {continents.map((continent) => (
-                <option key={continent} value={continent}>
-                  {continent}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col xl={4} lg={12} className="venues-list overflow-auto left-card">
-          <Row>
-            {filteredVenues.map((venue: Venue) => (
-              <VenueListCard
-                key={venue.id}
-                venue={venue}
-                onHover={handleVenueHover}
-                onClick={handleVenueClick}
-              />
-            ))}
-            {venues.length > 0 && (
-              <div
-                ref={lastVenueElementRef}
-                className="infinite-scroll-sentinel"
-              />
-            )}
-            {isFetchingNextPage && (
-              <Alert variant="info" className="text-center my-3">
-                Loading more venues...
-              </Alert>
-            )}
-            {!hasNextPage &&
-              !isFetchingNextPage &&
-              filteredVenues.length > 0 && (
+              {venues.length > 0 && (
+                <div
+                  ref={lastVenueElementRef}
+                  className="infinite-scroll-sentinel"
+                  aria-label="Loading more venues"
+                />
+              )}
+              {isFetchingNextPage && (
                 <Alert variant="info" className="text-center my-3">
-                  No more venues to load.
+                  Loading more venues...
                 </Alert>
               )}
-            {filteredVenues.length === 0 && !isLoading && (
-              <Alert variant="warning" className="text-center my-3">
-                No venues found for the selected continent.
-              </Alert>
-            )}
-          </Row>
-        </Col>
-        <Col lg={8} className="map-container position-sticky d-none d-xl-block">
-          {isGeocodeError && (
-            <Row>
-              <Col>
-                <Alert variant="warning" className="text-center">
-                  We’re unable to find the exact location for this venue right
-                  now.
-                  {geocodeError && ` More details: ${geocodeError.message}`}
+              {!hasNextPage &&
+                !isFetchingNextPage &&
+                filteredVenues.length > 0 && (
+                  <Alert variant="info" className="text-center my-3">
+                    No more venues to load.
+                  </Alert>
+                )}
+              {filteredVenues.length === 0 && !isLoading && (
+                <Alert variant="warning" className="text-center my-3">
+                  No venues found for the selected continent.
                 </Alert>
-              </Col>
+              )}
             </Row>
-          )}
-          {!hoveredLatLng && !isGeocodeError && userInteracted && (
-            <Row>
-              <Col>
-                <Alert variant="warning" className="text-center">
-                  No valid location found for this venue. Displaying default
-                  location.
-                </Alert>
-              </Col>
-            </Row>
-          )}
-          <GoogleMap
-            mapContainerClassName="w-100 h-100"
-            zoom={12}
-            center={hoveredLatLng ?? center}
-          >
-            {hoveredLatLng && <Marker position={hoveredLatLng} />}
-          </GoogleMap>
+          </Col>
 
-          {hoveredVenue && hoveredLatLng && (
-            <VenueMapCard
-              venue={hoveredVenue}
-              onViewDetails={handleVenueClick}
-            />
-          )}
-        </Col>
-      </Row>
+          {/* Map Section */}
+          <Col
+            xl={9}
+            className="map-container position-sticky d-none d-xl-block"
+            aria-label="Map of venues"
+          >
+            {isGeocodeError && (
+              <Row>
+                <Col>
+                  <Alert variant="warning" className="text-center">
+                    We’re unable to find the exact location for this venue right
+                    now.
+                    {geocodeError && ` More details: ${geocodeError.message}`}
+                  </Alert>
+                </Col>
+              </Row>
+            )}
+            {!hoveredLatLng && !isGeocodeError && userInteracted && (
+              <Row>
+                <Col>
+                  <Alert variant="warning" className="text-center">
+                    No valid location found for this venue. Displaying default
+                    location.
+                  </Alert>
+                </Col>
+              </Row>
+            )}
+            <GoogleMap
+              mapContainerClassName="w-100 h-100"
+              zoom={12}
+              center={hoveredLatLng ?? center}
+            >
+              {hoveredLatLng && <Marker position={hoveredLatLng} />}
+            </GoogleMap>
+
+            {hoveredVenue && hoveredLatLng && (
+              <VenueMapCard
+                venue={hoveredVenue}
+                onViewDetails={handleVenueClick}
+              />
+            )}
+          </Col>
+        </Row>
+      </section>
     </Container>
   );
 }

@@ -1,14 +1,14 @@
 import React, { useState, useContext } from "react";
-import "./login.scss";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import * as Yup from "yup";
 import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
-import { useMessage } from "../../hooks/useMessage";
+import { useMessage } from "../../hooks/apiHooks/useMessage";
 import Message from "../../components/message/message";
 import { UserContext } from "../../contexts/UserContext";
-import { useLoginUser } from "../../hooks/useAuth";
+import { useLoginUser } from "../../hooks/apiHooks/useAuth";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
+import "./login.scss";
 
 // Yup Schema for validation
 const loginSchema = Yup.object().shape({

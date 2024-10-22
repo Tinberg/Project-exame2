@@ -59,6 +59,10 @@ EXPLORE COMPONENT
 
 
 FIX
-- Font color placeholder inputs?
+- make section element on  venuedetails
+- details page align meet the owner and venueFeatures?
+- details page modal. make it possible to click next and prev img in enlarged img new names enlarged im?
+  
+
 
 
