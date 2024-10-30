@@ -1,3 +1,4 @@
+// Interfaces for user data and context properties (userContext)
 export interface User {
   accessToken: string | null;
   userName: string | null;

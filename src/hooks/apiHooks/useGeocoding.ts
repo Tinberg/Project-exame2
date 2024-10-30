@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getLatLngFromGeocoding } from "../../services/api/endpoints/geocoding";
 
+
 export const useGeocode = (location: {
   address?: string;
   city?: string;

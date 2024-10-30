@@ -24,3 +24,5 @@ export interface BookingUpdateData {
   dateTo?: string;  
   guests?: number;
 }
+
+

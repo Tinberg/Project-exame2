@@ -1,0 +1,14 @@
+.legend-circle {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+  }
+  
+  .legend-circle.unavailable {
+    background-color: #f0f0f0;
+  }
+  
+  .legend-circle.selected {
+    background-color: var(--bs-primary);
+  }
+  

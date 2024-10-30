@@ -6,17 +6,8 @@ import {
 } from '../../../schemas/booking';
 
 // Get all bookings
-export const getBookings = async (params?: {
-  _customer?: boolean;
-  _venue?: boolean;
-  page?: number;
-  limit?: number;
-  sort?: string;
-}): Promise<Booking[]> => {
-  const response = await apiClient.get<{ data: Booking[] }>(
-    '/holidaze/bookings',
-    { params }
-  );
+export const getBookings = async (): Promise<Booking[]> => {
+  const response = await apiClient.get<{ data: Booking[] }>('/holidaze/bookings');
   return response.data.data;
 };
 

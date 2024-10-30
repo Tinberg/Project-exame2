@@ -1,11 +1,20 @@
 import React, { createContext, useState, useEffect } from "react";
 import { User, UserContextProps } from "../types/user";
 
-export const UserContext = createContext<UserContextProps | undefined>(
-  undefined
-);
+// Default user state (logged-out)
+const defaultUser = {
+  accessToken: null,
+  userName: null,
+  avatarUrl: null,
+};
 
-// manages user state and syncs it with localStorage, providing user and setUser through UserContext
+// Create context with default values
+export const UserContext = createContext<UserContextProps>({
+  user: defaultUser,
+  setUser: () => {},
+});
+
+// Provider component to manage and share user state. load user state from localStorage if present
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -14,7 +23,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     userName: localStorage.getItem("userName"),
     avatarUrl: localStorage.getItem("avatarUrl"),
   });
-  // Update localStorage whenever user state changes
+
+  // Sync user state with localStorage on change
   useEffect(() => {
     if (user.accessToken) {
       localStorage.setItem("accessToken", user.accessToken);

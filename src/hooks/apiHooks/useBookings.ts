@@ -13,16 +13,10 @@ import {
 } from "../../schemas/booking";
 
 // Get all bookings
-export const useBookings = (params?: {
-  _customer?: boolean;
-  _venue?: boolean;
-  page?: number;
-  limit?: number;
-  sort?: string;
-}) => {
+export const useBookings = () => {
   return useQuery<Booking[], Error>({
-    queryKey: ["bookings", params],
-    queryFn: () => getBookings(params),
+    queryKey: ["bookings"],
+    queryFn: getBookings,
   });
 };
 

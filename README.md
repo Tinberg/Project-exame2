@@ -56,13 +56,24 @@ FOLDER STRUCTURE
 EXPLORE COMPONENT
 
 - filter by continent fetches all venues (if the api allowed a continent filter i wouldnt have to fetch all venues when change filter by continent, and i decided to not write more code on the client side as the explore component is already filled with code.)
+- explore component use <Googlemaps> for further implementation on map (see all venues)
+
+VENUE DETAILS COMPONENT
+
+- I kept image-related code here for simplicity( and bcs its only used here ), but if the page grows i would move it to a separate component for readability. 
 
 
-FIX
-- make section element on  venuedetails
+
+
+
+
+
+venuedetials
+- go thourgh code in venuedetails and calander component
 - details page align meet the owner and venueFeatures?
-- details page modal. make it possible to click next and prev img in enlarged img new names enlarged im?
-  
 
+overall
+- loading and error component for all pages? venuedetails and explore? 
 
-
+Explore 
+- check location sessionstorage when update a venue. will it fetch the old sessionstroage lat. lng. or fetch new. if not fetch new, fix it. 
