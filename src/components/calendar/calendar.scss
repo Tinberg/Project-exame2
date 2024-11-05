@@ -3,7 +3,9 @@
     height: 15px;
     border-radius: 50%;
   }
-  
+  .legend-circle.today {
+    background-color: #ffff76;
+  }
   .legend-circle.unavailable {
     background-color: #f0f0f0;
   }

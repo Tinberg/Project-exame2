@@ -49,18 +49,20 @@ export default tseslint.config({
 });
 ```
 
-FOLDER STRUCTURE
+FOLDER STRUCTURE AND GENERAL INFO
 
 - types for api call and yup is under schemas and general defines for typescript is under types folder. in small component where the types only has to be defined in that componen it will stay in that file.
+- Using Alert instead of the Message component for all messages that don't require a timer to clear. This simplifies the code where messages are static and don't need to be dismissed automatically.
 
 EXPLORE COMPONENT
-
+- Storing location data in sessionStorage isn't ideal, as updates by venue owners won’t reflect in real-time. Users must clear the old data or restart the browser to see changes. This method was used to stay within the geocoding API's free trial limits.
 - filter by continent fetches all venues (if the api allowed a continent filter i wouldnt have to fetch all venues when change filter by continent, and i decided to not write more code on the client side as the explore component is already filled with code.)
 - explore component use <Googlemaps> for further implementation on map (see all venues)
 
 VENUE DETAILS COMPONENT
 
 - I kept image-related code here for simplicity( and bcs its only used here ), but if the page grows i would move it to a separate component for readability. 
+- this file also contain a lot of code, so i could made smaller components inside venueDetails forlder, but i kept it in this file with comments.
 
 
 
@@ -69,11 +71,21 @@ VENUE DETAILS COMPONENT
 
 
 venuedetials
-- go thourgh code in venuedetails and calander component
-- details page align meet the owner and venueFeatures?
 
-overall
-- loading and error component for all pages? venuedetails and explore? 
+
 
 Explore 
 - check location sessionstorage when update a venue. will it fetch the old sessionstroage lat. lng. or fetch new. if not fetch new, fix it. 
+
+venueDetails 
+- meet the owner link to myprofile
+
+modals forms 
+- put login and register to a own file with yup schemas and for the modals?
+
+MyProfile
+- fix all code
+- use card component
+- fix alert to be consisten with other page
+- layout +++++
+- edit venue gir 500 error

@@ -1,0 +1,34 @@
+//-- Weather --//
+.weather-icon {
+    font-size: 3.7rem;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.sunny {
+    color: #FFA500;
+}
+
+.cloudy {
+    color: #708090; 
+}
+
+.rain {
+    color: #007ACC; 
+}
+
+.snow {
+    color: #5DADE2; 
+}
+
+.thunderstorm {
+    color: #4B0082; 
+}
+
+.default {
+    color: #696969; 
+}
+
+
+.temp-paragraph {
+    margin-top: 28px;
+}

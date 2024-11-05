@@ -9,3 +9,8 @@ export interface Message {
 export interface MessageOptions {
   duration?: number; 
 }
+
+export interface MessageProps {
+  message: Message;
+  onClose: () => void;
+}

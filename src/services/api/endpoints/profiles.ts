@@ -79,11 +79,13 @@ export const getVenuesByProfile = async (
   return response.data.data;
 };
 
-// Search profiles (For potential use in future)
-export const searchProfiles = async (query: string): Promise<Profile[]> => {
-  const response = await apiClient.get<{ data: Profile[] }>(
-    '/holidaze/profiles/search',
-    { params: { q: query } }
-  );
-  return response.data.data;
-};
+
+
+// // Search profiles (For potential use in future)
+// export const searchProfiles = async (query: string): Promise<Profile[]> => {
+//   const response = await apiClient.get<{ data: Profile[] }>(
+//     '/holidaze/profiles/search',
+//     { params: { q: query } }
+//   );
+//   return response.data.data;
+// };

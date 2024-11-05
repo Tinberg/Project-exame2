@@ -5,7 +5,7 @@ import {
   updateProfile,
   getBookingsByProfile,
   getVenuesByProfile,
-  searchProfiles,
+  // searchProfiles,
 } from "../../services/api/endpoints/profiles";
 import { Profile, ProfileUpdateData } from "../../schemas/profile";
 import { Booking } from "../../schemas/booking";
@@ -69,11 +69,14 @@ export const useVenuesByProfile = (
   });
 };
 
-// Search profiles
-export const useSearchProfiles = (query: string) => {
-  return useQuery<Profile[], Error>({
-    queryKey: ["profiles-search", query],
-    queryFn: () => searchProfiles(query),
-    enabled: query.length > 0,
-  });
-};
+
+
+
+// // Search profiles (For potential use in future)
+// export const useSearchProfiles = (query: string) => {
+//   return useQuery<Profile[], Error>({
+//     queryKey: ["profiles-search", query],
+//     queryFn: () => searchProfiles(query),
+//     enabled: query.length > 0,
+//   });
+// };

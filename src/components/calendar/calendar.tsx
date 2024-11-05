@@ -213,19 +213,35 @@ function BookingSection({ venue }: BookingSectionProps) {
               />{" "}
               {/* Color Legend */}
               <Row className="mt-2 mb-4 mb-lg-0">
-                <Col xs="auto" className="d-flex align-items-center">
+                <Col
+                  xs="auto"
+                  className="d-flex align-items-center px-1 px-sm-3"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="legend-circle today me-2 border border-dark"
+                  ></span>
+                  <span>Today</span>
+                </Col>
+                <Col
+                  xs="auto"
+                  className="d-flex align-items-center px-1 px-sm-3"
+                >
                   <span
                     aria-hidden="true"
                     className="legend-circle unavailable me-2 border border-dark"
                   ></span>
-                  <span>Unavailable Dates</span>
+                  <span>Unavailable</span>
                 </Col>
-                <Col xs="auto" className="d-flex align-items-center">
+                <Col
+                  xs="auto"
+                  className="d-flex align-items-center px-1 px-sm-3"
+                >
                   <span
                     aria-hidden="true"
                     className="legend-circle selected me-2 border border-dark"
                   ></span>
-                  <span>Selected Dates</span>
+                  <span>Selected</span>
                 </Col>
               </Row>
             </Form.Group>
@@ -303,3 +319,4 @@ function BookingSection({ venue }: BookingSectionProps) {
 }
 
 export default BookingSection;
+

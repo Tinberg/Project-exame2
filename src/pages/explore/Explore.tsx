@@ -16,7 +16,7 @@ import {
 import "./explore.scss";
 
 function Explore() {
-  // State for sorting and filter
+  //-- State: Sorting Options --//
   const [selectedSortOption, setSelectedSortOption] = useState<string>(
     sortOptions[0].value
   );
@@ -24,7 +24,8 @@ function Explore() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
     sortOptions[0].sortOrder
   );
-  // Geocoded venue state from session storage
+
+  //-- State: Geocoded Venues (Session Storage) --//
   const [geocodedVenues, setGeocodedVenues] = useState<{
     [venueId: string]: { lat: number; lng: number };
   }>(() => {
@@ -36,7 +37,7 @@ function Explore() {
     }
   });
 
-  // State for hovered venue details and geocoding
+  //-- State: Hovered Venue Details --//
   const [hoveredVenue, setHoveredVenue] = useState<Venue | null>(null);
   const [hoveredLatLng, setHoveredLatLng] = useState<{
     lat: number;
@@ -47,14 +48,15 @@ function Explore() {
   >(null);
   const [continentFilter, setContinentFilter] = useState<string>("");
   const [userInteracted, setUserInteracted] = useState<boolean>(false);
+  const [fetchAttempted, setFetchAttempted] = useState(false);
   const navigate = useNavigate();
 
-  // Load Google Maps script
+  //-- Google Maps API Loading --//
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
   });
 
-  // Fetch venues based on sort
+  //-- Fetch Venues Data based on Sort Options --//
   const {
     data,
     error,
@@ -68,17 +70,15 @@ function Explore() {
     sortOrder,
   });
 
-  // Memo venue list to optimize rendering
+  //-- Memoize Venues for Optimized Rendering --//
   const venues = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data]
   );
 
-  // Filter venues based on selected continentFilter
+  //-- Filter Venues based on Selected Continent --//
   const filteredVenues = useMemo(() => {
-    if (!continentFilter) {
-      return venues;
-    }
+    if (!continentFilter) return venues;
     return venues.filter(
       (venue) =>
         (venue.location?.continent?.toLowerCase() || "") ===
@@ -86,25 +86,21 @@ function Explore() {
     );
   }, [venues, continentFilter]);
 
-  // Infinite scrolling load more venues
+  //-- Infinite Scrolling for Venues (Load More) --//
   const observer = useRef<IntersectionObserver>();
   const lastVenueElementRef = useCallback(
     (node: Element | null) => {
       if (isFetchingNextPage) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          fetchNextPage();
-        }
+        if (entries[0].isIntersecting && hasNextPage) fetchNextPage();
       });
       if (node) observer.current.observe(node);
     },
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
-  // ensure enough venues are loaded t match filter criteria
-  const [fetchAttempted, setFetchAttempted] = useState(false);
-
+  //-- Ensure Sufficient Venues for Filter Criteria --//
   useEffect(() => {
     if (
       filteredVenues.length < 20 &&
@@ -125,7 +121,7 @@ function Explore() {
     fetchNextPage,
   ]);
 
-  // Geocode the venue if needed
+  //-- Geocode Hovered Venue Location if Needed --//
   const {
     data: latLng,
     isError: isGeocodeError,
@@ -141,7 +137,7 @@ function Explore() {
       : {}
   );
 
-  // Update geocoded venues state and session storage
+  //-- Update Geocoded Venues State and Session Storage --//
   useEffect(() => {
     if (hoveredVenue && currentGeocodingVenueId === hoveredVenue.id) {
       if (isGeocodeError) {
@@ -162,22 +158,20 @@ function Explore() {
     }
   }, [latLng, hoveredVenue, currentGeocodingVenueId, isGeocodeError]);
 
-  // Handle venue hover to show its location on the map
+  //-- Handle Venue Hover to Show Location on Map --//
   const handleVenueHover = (venue: Venue) => {
-    if (window.innerWidth < 1200) {
-      return;
-    }
+    if (window.innerWidth < 1200) return;
 
     setUserInteracted(true);
     setHoveredVenue(venue);
 
     if (geocodedVenues[venue.id]) {
       const cachedLatLng = geocodedVenues[venue.id];
-      if (isValidCoordinate(cachedLatLng.lat, cachedLatLng.lng)) {
-        setHoveredLatLng(cachedLatLng);
-      } else {
-        setHoveredLatLng(null);
-      }
+      setHoveredLatLng(
+        isValidCoordinate(cachedLatLng.lat, cachedLatLng.lng)
+          ? cachedLatLng
+          : null
+      );
       setCurrentGeocodingVenueId(null);
     } else if (
       venue.location?.lat != null &&
@@ -206,12 +200,12 @@ function Explore() {
     }
   };
 
-  // Navigate to venue details page
+  //-- Navigate to Venue Details Page --//
   const handleVenueClick = (venueId: string) => {
     navigate(`/venueDetails/${venueId}`);
   };
 
-  // Handle sorting changes
+  //-- Handle Sorting Changes --//
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
     setSelectedSortOption(selectedValue);
@@ -224,37 +218,32 @@ function Explore() {
     }
   };
 
-  // Handle continent filter change
+  //-- Handle Continent Filter Change --//
   const handleContinentFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setContinentFilter(e.target.value);
   };
 
-  // Show loading or error messages
-  if (!isLoaded) {
+  //-- Loading and Error Handling --//
+  if (!isLoaded)
     return (
       <Alert variant="info" className="text-center">
         Loading Map...
       </Alert>
     );
-  }
-
-  if (isLoading) {
+  if (isLoading)
     return (
       <Alert variant="info" className="text-center">
         Loading Venues...
       </Alert>
     );
-  }
-
-  if (error) {
+  if (error)
     return (
       <Alert variant="danger" className="text-center">
         We’re having trouble loading venues right now. Please try again later.
       </Alert>
     );
-  }
 
   return (
     <Container fluid className="explore-container pb-3 mt-5">
