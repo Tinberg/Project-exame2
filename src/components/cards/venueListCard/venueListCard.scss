@@ -5,4 +5,7 @@
   .venue-image {
     height: 300px; 
   }
-  
+  // City and Country paragraph to have same hight if
+  .city-country-p {
+    min-height: 25px;
+  }

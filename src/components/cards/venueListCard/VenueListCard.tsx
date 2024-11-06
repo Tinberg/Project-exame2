@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, ReactNode } from "react";
 import { Card, Button, Col } from "react-bootstrap";
 import { Venue } from "../../../schemas/venue";
 import defaultImage from "../../../assets/images/venueImage/noVenueImage.jpg";
@@ -7,13 +7,34 @@ import "./venueListCard.scss";
 // Interface for VenueListCard
 interface VenueListCardProps {
   venue: Venue;
-  onHover: (venue: Venue) => void;
+  buttonType: "view" | "cancel" | "edit";
   onClick: (venueId: string) => void;
+  onHover?: (venue: Venue) => void;
+  dateFrom?: string;
+  dateTo?: string;
+  guests?: number;
+  totalPrice?: number;
+  showCapacity?: boolean;
+  showPrice?: boolean;
+  children?: ReactNode;
 }
 
-// Card component displays a venue's details. Triggers onHover and onClick actions when interacted with.
 const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
-  ({ venue, onHover, onClick }, ref) => {
+  (
+    {
+      venue,
+      buttonType,
+      onClick,
+      onHover,
+      dateFrom,
+      dateTo,
+      guests,
+      totalPrice,
+      showCapacity = true,
+      showPrice = true,
+    },
+    ref
+  ) => {
     const venueImage = venue.media?.[0]?.url || defaultImage;
 
     return (
@@ -26,8 +47,7 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
       >
         <Card
           className="h-100 w-100"
-          onMouseEnter={() => onHover(venue)}
-          onClick={() => onClick(venue.id)}
+          onMouseEnter={onHover ? () => onHover(venue) : undefined}
         >
           <Card.Img
             variant="top"
@@ -40,30 +60,83 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
             className="venue-image"
           />
           <Card.Body className="d-flex flex-column justify-content-between bg-secondary">
-            <Card.Title className="fw-bolder text-truncate mb-0 ">
+            <Card.Title className="fw-bolder text-truncate mb-0">
               {venue.name}
             </Card.Title>
-            <p>
+            <p className="text-truncate city-country-p">
               {venue.location?.city && venue.location?.country
                 ? `${venue.location.city}, ${venue.location.country}`
-                : venue.location?.city ||
-                  venue.location?.country ||
-                  "Location not available"}
+                : venue.location?.city || venue.location?.country}
             </p>
-            <p>
-              <span className="fw-bold">Capacity:</span> {venue.maxGuests}{" "}
-              Guests
-            </p>
-            <p>
-              <span className="fw-bold">Price:</span> ${venue.price}
-            </p>
-            <Button
-              variant="primary"
-              className="w-100"
-              onClick={() => onClick(venue.id)}
-            >
-              View Details
-            </Button>
+
+            {/* Booking-Specific Details */}
+            {dateFrom && (
+              <p>
+                <span className="fw-bold">Date From:</span>{" "}
+                {new Date(dateFrom).toLocaleDateString()}
+              </p>
+            )}
+            {dateTo && (
+              <p>
+                <span className="fw-bold">Date To:</span>{" "}
+                {new Date(dateTo).toLocaleDateString()}
+              </p>
+            )}
+            {guests !== undefined && (
+              <p>
+                <span className="fw-bold">Guests:</span> {guests}
+              </p>
+            )}
+            {totalPrice !== undefined && (
+              <p>
+                <span className="fw-bold">Total Price:</span> $
+                {Number.isInteger(totalPrice)
+                  ? totalPrice
+                  : totalPrice.toFixed(2)}
+              </p>
+            )}
+
+            {/* Capacity and Price */}
+            {showCapacity && (
+              <p>
+                <span className="fw-bold">Capacity:</span> {venue.maxGuests}{" "}
+                Guests
+              </p>
+            )}
+            {showPrice && (
+              <p>
+                <span className="fw-bold">Price:</span> ${venue.price}
+              </p>
+            )}
+
+            {/* Buttons */}
+            {buttonType === "view" && (
+              <Button
+                variant="primary"
+                className="w-100"
+                onClick={() => onClick(venue.id)}
+              >
+                View Details
+              </Button>
+            )}
+            {buttonType === "cancel" && (
+              <Button
+                variant="danger"
+                className="w-100"
+                onClick={() => onClick(venue.id)}
+              >
+                Cancel Booking
+              </Button>
+            )}
+            {buttonType === "edit" && (
+              <Button
+                variant="warning"
+                className="w-100"
+                onClick={() => onClick(venue.id)}
+              >
+                Edit Venue
+              </Button>
+            )}
           </Card.Body>
         </Card>
       </Col>

@@ -14,6 +14,7 @@ dayjs.extend(isSameOrBefore);
 import { Venue } from "../../schemas/venue";
 import { UserContext } from "../../contexts/UserContext";
 import { Link } from "react-router-dom";
+import { calculateTotalPrice } from "../..//utils/priceCalculator";
 import "./calendar.scss";
 
 // Types for BookingSection
@@ -97,21 +98,8 @@ function BookingSection({ venue }: BookingSectionProps) {
   useEffect(() => {
     if (selectedDates) {
       const [fromDate, toDate] = selectedDates;
-
       if (fromDate && toDate) {
-        setDateError(null);
-
-        let nights = dayjs(toDate).diff(dayjs(fromDate), "day");
-        if (nights < 0) {
-          setTotalPrice(0);
-          setDateError("Invalid date range.");
-          return;
-        }
-        if (nights === 0) {
-          nights = 1;
-        }
-
-        setTotalPrice(nights * venue.price);
+        setTotalPrice(calculateTotalPrice(fromDate, toDate, venue.price));
       } else {
         setTotalPrice(0);
         setDateError("Please select valid dates.");

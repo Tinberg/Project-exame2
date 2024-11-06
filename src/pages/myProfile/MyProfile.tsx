@@ -1,16 +1,4 @@
-// function MyProfile() {
-//     return (
-//       <div className="register-container">
-//         <h1>Sign Up</h1>
-//       </div>
-//     );
-//   }
-
-//   export default MyProfile;
-
-// MyProfile.tsx
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -22,9 +10,16 @@ import {
   Card,
   Alert,
 } from "react-bootstrap";
-import { useProfileByName } from "../../hooks/apiHooks/useProfiles";
-import { useBookingsByProfile } from "../../hooks/apiHooks/useProfiles";
-import { useVenuesByProfile } from "../../hooks/apiHooks/useProfiles";
+import VenueListCard from "../../components/cards/venueListCard/VenueListCard";
+import Message from "../../components/message/message";
+import { calculateTotalPrice } from "../../utils/priceCalculator";
+import {
+  useProfileByName,
+  useBookingsByProfile,
+  useVenuesByProfile,
+} from "../../hooks/apiHooks/useProfiles";
+import { useDeleteBooking } from "../../hooks/apiHooks/useBookings";
+import { useMessage } from "../../hooks/generalHooks/useMessage";
 import { getUserName } from "../../services/api/authService";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -37,36 +32,67 @@ const MyProfile: React.FC = () => {
   const userName = getUserName();
   const navigate = useNavigate();
 
+  //-- Modal visibility states --//
   const [showCreateVenueModal, setShowCreateVenueModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
+  // Message Component
+  const { message, showMessage, clearMessage } = useMessage();
+
   if (!userName) {
-    // If user is not logged in, redirect or show an error
     navigate("/login");
     return null;
   }
 
-  // Fetch profile data
+  //-- Fetch profile and booking data --//
   const {
     data: profile,
     isLoading: isProfileLoading,
     error: profileError,
   } = useProfileByName(userName, { _bookings: true, _venues: true });
-
-  // Fetch bookings
   const {
-    data: bookings,
+    data: initialBookings,
     isLoading: isBookingsLoading,
     error: bookingsError,
   } = useBookingsByProfile(userName, { _venue: true });
-
-  // Fetch venues
   const {
     data: venues,
     isLoading: isVenuesLoading,
     error: venuesError,
   } = useVenuesByProfile(userName, { _bookings: true });
 
+  //-- Cancel Booking --//
+  useEffect(() => {
+    if (initialBookings) {
+      setBookings(initialBookings);
+    }
+  }, [initialBookings]);
+
+  const [bookings, setBookings] = useState(initialBookings || []);
+  const deleteBookingMutation = useDeleteBooking();
+  const handleDeleteBooking = (bookingId: string) => {
+    deleteBookingMutation.mutate(bookingId, {
+      onSuccess: () => {
+        showMessage("success", "Booking deleted successfully");
+
+        setBookings((prevBookings) =>
+          prevBookings.filter((booking) => booking.id !== bookingId)
+        );
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      },
+      onError: () => {
+        showMessage(
+          "error",
+          "We couldn’t cancel your booking at this time. Please check your connection or try again later"
+        );
+      },
+    });
+  };
+
+  //-- Error messages --//
   if (isProfileLoading) {
     return (
       <Alert className="text-center mt-5" variant="info">
@@ -106,7 +132,10 @@ const MyProfile: React.FC = () => {
       <Row className="align-items-center mb-5">
         <Col md={4} className="text-center">
           <Image
-            src={profile.avatar?.url || "../../assets/images/profileImagee/noProfileImage.png"}
+            src={
+              profile.avatar?.url ||
+              "../../assets/images/profileImagee/noProfileImage.png"
+            }
             alt={profile.avatar?.alt || "Avatar"}
             roundedCircle
             className="avatar-image mb-3"
@@ -124,12 +153,12 @@ const MyProfile: React.FC = () => {
           </Button>
         </Col>
       </Row>
-
+      {message && <Message message={message} onClose={clearMessage} />}
       {/* Tabs Section */}
       <Tabs defaultActiveKey="bookings" id="profile-tabs" className="mt-5">
         <Tab eventKey="bookings" title="View and Manage Bookings">
           {isBookingsLoading ? (
-            <Alert variant="info" className="text-center mt-4 ">
+            <Alert variant="info" className="text-center mt-4">
               <p>Loading bookings...</p>
             </Alert>
           ) : bookingsError ? (
@@ -138,37 +167,34 @@ const MyProfile: React.FC = () => {
             </Alert>
           ) : bookings && bookings.length > 0 ? (
             <Row className="mt-4">
-              {bookings.map((booking) => (
-                <Col md={4} key={booking.id} className="mb-4">
-                  <Card>
-                    <Card.Img
-                      variant="top"
-                      src={
-                        booking.venue?.media && booking.venue.media.length > 0
-                          ? booking.venue.media[0].url
-                          : "DefaultImage"
-                      }
-                      alt={
-                        booking.venue?.media && booking.venue.media.length > 0
-                          ? booking.venue.media[0].alt
-                          : "Venue Image"
-                      }
+              {bookings.map((booking) => {
+                if (!booking.venue) return null;
+
+                // Use the utility function to calculate total price
+                const dateFrom = new Date(booking.dateFrom);
+                const dateTo = new Date(booking.dateTo);
+                const totalPrice = calculateTotalPrice(
+                  dateFrom,
+                  dateTo,
+                  booking.venue.price
+                );
+
+                return (
+                  <Col md={4} key={booking.id} className="mb-4">
+                    <VenueListCard
+                      venue={booking.venue}
+                      buttonType="cancel"
+                      onClick={() => handleDeleteBooking(booking.id)}
+                      dateFrom={booking.dateFrom}
+                      dateTo={booking.dateTo}
+                      guests={booking.guests}
+                      totalPrice={totalPrice}
+                      showCapacity={false}
+                      showPrice={false}
                     />
-                    <Card.Body>
-                      <Card.Title>{booking.venue?.name}</Card.Title>
-                      <Card.Text>
-                        {booking.venue?.location.city},{" "}
-                        {booking.venue?.location.country}
-                      </Card.Text>
-                      <Card.Text>Guests: {booking.guests}</Card.Text>
-                      <Card.Text>
-                        Price per night: ${booking.venue?.price}
-                      </Card.Text>
-                      <Button variant="danger">Cancel Booking</Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
+                  </Col>
+                );
+              })}
             </Row>
           ) : (
             <Alert variant="info" className="mt-4 text-center">

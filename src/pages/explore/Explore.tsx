@@ -158,44 +158,54 @@ function Explore() {
     }
   }, [latLng, hoveredVenue, currentGeocodingVenueId, isGeocodeError]);
 
-  //-- Handle Venue Hover to Show Location on Map --//
+  //-- Handles venue hover to show the location on the map, using cached coordinates if available or fetching new data if the location has changed --//
   const handleVenueHover = (venue: Venue) => {
     if (window.innerWidth < 1200) return;
 
     setUserInteracted(true);
     setHoveredVenue(venue);
 
-    if (geocodedVenues[venue.id]) {
-      const cachedLatLng = geocodedVenues[venue.id];
+    const cachedLatLng = geocodedVenues[venue.id];
+    const locationHasChanged =
+      !cachedLatLng ||
+      venue.location?.lat !== cachedLatLng.lat ||
+      venue.location?.lng !== cachedLatLng.lng;
+
+    if (locationHasChanged) {
+      if (
+        venue.location?.lat != null &&
+        venue.location?.lng != null &&
+        isValidCoordinate(venue.location.lat, venue.location.lng)
+      ) {
+        const latLng = { lat: venue.location.lat, lng: venue.location.lng };
+        setHoveredLatLng(latLng);
+        setGeocodedVenues((prev) => {
+          const updatedVenues = { ...prev, [venue.id]: latLng };
+          sessionStorage.setItem(
+            "geocodedVenues",
+            JSON.stringify(updatedVenues)
+          );
+          return updatedVenues;
+        });
+        setCurrentGeocodingVenueId(null);
+      } else if (
+        venue.location?.address ||
+        venue.location?.city ||
+        venue.location?.country ||
+        venue.location?.continent
+      ) {
+        setHoveredLatLng(null);
+        setCurrentGeocodingVenueId(venue.id);
+      } else {
+        setHoveredLatLng(null);
+        setCurrentGeocodingVenueId(null);
+      }
+    } else {
       setHoveredLatLng(
         isValidCoordinate(cachedLatLng.lat, cachedLatLng.lng)
           ? cachedLatLng
           : null
       );
-      setCurrentGeocodingVenueId(null);
-    } else if (
-      venue.location?.lat != null &&
-      venue.location?.lng != null &&
-      isValidCoordinate(venue.location.lat, venue.location.lng)
-    ) {
-      const latLng = { lat: venue.location.lat, lng: venue.location.lng };
-      setHoveredLatLng(latLng);
-      setGeocodedVenues((prev) => {
-        const updatedVenues = { ...prev, [venue.id]: latLng };
-        sessionStorage.setItem("geocodedVenues", JSON.stringify(updatedVenues));
-        return updatedVenues;
-      });
-      setCurrentGeocodingVenueId(null);
-    } else if (
-      venue.location?.address ||
-      venue.location?.city ||
-      venue.location?.country ||
-      venue.location?.continent
-    ) {
-      setHoveredLatLng(null);
-      setCurrentGeocodingVenueId(venue.id);
-    } else {
-      setHoveredLatLng(null);
       setCurrentGeocodingVenueId(null);
     }
   };
@@ -310,6 +320,7 @@ function Explore() {
                 <VenueListCard
                   key={venue.id}
                   venue={venue}
+                  buttonType="view"
                   onHover={handleVenueHover}
                   onClick={handleVenueClick}
                   aria-label={`Venue ${venue.name}`}

@@ -54,10 +54,10 @@ export const useUpdateBooking = (id: string) => {
 };
 
 // Delete a booking
-export const useDeleteBooking = (id: string) => {
+export const useDeleteBooking = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error>({
-    mutationFn: () => deleteBooking(id),
+  return useMutation<void, Error, string>({
+    mutationFn: (bookingId: string) => deleteBooking(bookingId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
     },
