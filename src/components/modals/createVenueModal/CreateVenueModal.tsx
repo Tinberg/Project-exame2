@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Modal, Form, Button, Alert } from "react-bootstrap";
-import { useCreateVenue } from "../../hooks/apiHooks/useVenues";
-import { VenueCreationData } from "../../schemas/venue";
+import { useCreateVenue } from "../../../hooks/apiHooks/useVenues";
+import { VenueCreationData } from "../../../schemas/venue";
 import { useNavigate } from "react-router-dom";
 
 interface CreateVenueModalProps {
@@ -250,7 +250,7 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
                 }))
               }
             />
-          </Form.Group> 
+          </Form.Group>
           <Button variant="primary" type="submit" className="mt-4">
             Create Venue
           </Button>

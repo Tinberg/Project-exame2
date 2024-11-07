@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import {
   useUpdateProfile,
   useProfileByName,
-} from "../../hooks/apiHooks/useProfiles";
-import { getUserName } from "../../services/api/authService";
+} from "../../../hooks/apiHooks/useProfiles";
+import { getUserName } from "../../../services/api/authService";
 import "./editProfileModal.scss";
 
 interface EditProfileModalProps {

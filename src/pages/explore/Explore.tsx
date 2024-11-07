@@ -320,9 +320,9 @@ function Explore() {
                 <VenueListCard
                   key={venue.id}
                   venue={venue}
-                  buttonType="view"
+                  buttonTypes={["view"]}
                   onHover={handleVenueHover}
-                  onClick={handleVenueClick}
+                  onClick={() => handleVenueClick(venue.id)}
                   aria-label={`Venue ${venue.name}`}
                 />
               ))}

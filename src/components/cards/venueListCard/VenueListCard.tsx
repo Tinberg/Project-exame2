@@ -7,8 +7,8 @@ import "./venueListCard.scss";
 // Interface for VenueListCard
 interface VenueListCardProps {
   venue: Venue;
-  buttonType: "view" | "cancel" | "edit";
-  onClick: (venueId: string) => void;
+  buttonTypes: string[];
+  onClick: (action: string, venueId: string) => void;
   onHover?: (venue: Venue) => void;
   dateFrom?: string;
   dateTo?: string;
@@ -23,7 +23,7 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
   (
     {
       venue,
-      buttonType,
+      buttonTypes,
       onClick,
       onHover,
       dateFrom,
@@ -109,34 +109,27 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
               </p>
             )}
 
-            {/* Buttons */}
-            {buttonType === "view" && (
+            {/*  Buttons Based on buttonTypes */}
+            {buttonTypes.map((type) => (
               <Button
-                variant="primary"
-                className="w-100"
-                onClick={() => onClick(venue.id)}
+                key={type}
+                variant={
+                  type === "cancel"
+                    ? "danger"
+                    : type === "edit"
+                    ? "warning"
+                    : "primary"
+                }
+                className="w-100 mb-2"
+                onClick={() => onClick(type, venue.id)}
               >
-                View Details
+                {type === "cancel"
+                  ? "Cancel Booking"
+                  : type === "edit"
+                  ? "Edit Venue"
+                  : "View Details"}
               </Button>
-            )}
-            {buttonType === "cancel" && (
-              <Button
-                variant="danger"
-                className="w-100"
-                onClick={() => onClick(venue.id)}
-              >
-                Cancel Booking
-              </Button>
-            )}
-            {buttonType === "edit" && (
-              <Button
-                variant="warning"
-                className="w-100"
-                onClick={() => onClick(venue.id)}
-              >
-                Edit Venue
-              </Button>
-            )}
+            ))}
           </Card.Body>
         </Card>
       </Col>

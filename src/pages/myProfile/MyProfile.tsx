@@ -7,7 +7,6 @@ import {
   Button,
   Tabs,
   Tab,
-  Card,
   Alert,
 } from "react-bootstrap";
 import VenueListCard from "../../components/cards/venueListCard/VenueListCard";
@@ -24,8 +23,9 @@ import { getUserName } from "../../services/api/authService";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
-import CreateVenueModal from "../../components/createVenueModal/CreateVenueModal";
-import EditProfileModal from "../../components/editProfileModal/EditProfileModal";
+import CreateVenueModal from "../../components/modals/createVenueModal/CreateVenueModal";
+import EditProfileModal from "../../components/modals/editProfileModal/EditProfileModal";
+import newVenueImage from "../../assets/images/createNewVenue/newVenue.png";
 import "./myProfile.scss";
 
 const MyProfile: React.FC = () => {
@@ -118,18 +118,18 @@ const MyProfile: React.FC = () => {
   }
 
   return (
-    <Container className="my-profile-container mt-5">
+    <Container className="my-profile-container">
       {/* Banner */}
       {profile.banner?.url && (
         <Image
           src={profile.banner.url}
           alt={profile.banner.alt || "Banner"}
-          className="w-100 mb-4 profile-banner"
+          className="w-100 mb-4 profile-banner rounded"
         />
       )}
 
       {/* Avatar and User Info */}
-      <Row className="align-items-center mb-5">
+      <Row className="align-items-center border-bottom border-secondary border-3 pb-5">
         <Col md={4} className="text-center">
           <Image
             src={
@@ -153,7 +153,10 @@ const MyProfile: React.FC = () => {
           </Button>
         </Col>
       </Row>
+
+      {/* Messages */}
       {message && <Message message={message} onClose={clearMessage} />}
+
       {/* Tabs Section */}
       <Tabs defaultActiveKey="bookings" id="profile-tabs" className="mt-5">
         <Tab eventKey="bookings" title="View and Manage Bookings">
@@ -170,7 +173,7 @@ const MyProfile: React.FC = () => {
               {bookings.map((booking) => {
                 if (!booking.venue) return null;
 
-                // Use the utility function to calculate total price
+                // Utility function to calculate total price
                 const dateFrom = new Date(booking.dateFrom);
                 const dateTo = new Date(booking.dateTo);
                 const totalPrice = calculateTotalPrice(
@@ -180,11 +183,20 @@ const MyProfile: React.FC = () => {
                 );
 
                 return (
-                  <Col md={4} key={booking.id} className="mb-4">
+                  <Col xl={4}  key={booking.id} className="mb-4 justify-content-center align-items-center d-flex">
                     <VenueListCard
                       venue={booking.venue}
-                      buttonType="cancel"
-                      onClick={() => handleDeleteBooking(booking.id)}
+                      buttonTypes={["cancel", "view"]}
+                      onClick={(action) => {
+                        if (!booking.venue) return;
+
+                        if (action === "cancel") {
+                          handleDeleteBooking(booking.id);
+                        }
+                        if (action === "view") {
+                          navigate(`/venueDetails/${booking.venue.id}`);
+                        }
+                      }}
                       dateFrom={booking.dateFrom}
                       dateTo={booking.dateTo}
                       guests={booking.guests}
@@ -212,66 +224,62 @@ const MyProfile: React.FC = () => {
               Failed to load venues.
             </Alert>
           ) : (
-            <Row className="mt-4">
-              {/* Create New Venue Card */}
-              <Col md={4} className="mb-4">
-                <Card className="h-100">
-                  <Card.Body className="d-flex flex-column justify-content-center align-items-center">
-                    <Button
-                      variant="outline-primary"
-                      className="mb-3"
-                      onClick={() => setShowCreateVenueModal(true)}
-                    >
-                      <FontAwesomeIcon icon={faPlusCircle} size="3x" />
-                    </Button>
-                    <Card.Title>Create New Venue</Card.Title>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              {/* User's Venues */}
-              {venues && venues.length > 0 ? (
-                venues.map((venue) => (
-                  <Col md={4} key={venue.id} className="mb-4">
-                    <Card>
-                      <Card.Img
-                        variant="top"
-                        src={
-                          venue.media && venue.media.length > 0
-                            ? venue.media[0].url
-                            : "defaultImage"
-                        }
-                        alt={
-                          venue.media && venue.media.length > 0
-                            ? venue.media[0].alt
-                            : "Venue Image"
-                        }
-                      />
-                      <Card.Body>
-                        <Card.Title>{venue.name}</Card.Title>
-                        <Card.Text>
-                          {venue.location.city}, {venue.location.country}
-                        </Card.Text>
-                        <Card.Text>Capacity: {venue.maxGuests}</Card.Text>
-                        <Card.Text>Price: ${venue.price}</Card.Text>
-                        <Button
-                          variant="primary"
-                          onClick={() => navigate(`/edit-venue/${venue.id}`)}
-                        >
-                          Edit Venue
-                        </Button>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))
-              ) : (
-                <Col>
-                  <Alert variant="info" className="mt-4 text-center">
-                    You have no venues.
-                  </Alert>
+            <>
+              {/* Create New Venue Section */}
+              <Row className="mt-4 mb-4 justify-content-center border-bottom border-secondary border-3 py-5">
+                <Col
+                  md={6}
+                  lg={4}
+                  className="d-flex flex-column align-items-center newVenueContainer"
+                  onClick={() => setShowCreateVenueModal(true)}
+                >
+                  {" "}
+                  {/* Image */}
+                  <img
+                    src={newVenueImage}
+                    alt="Create New Venue"
+                    className="mb-3 newVenueImage "
+                  />
+                  {/* Icon */}
+                  <FontAwesomeIcon
+                    icon={faPlusCircle}
+                    size="3x"
+                    className="mb-3"
+                  />
+                  {/* Title */}
+                  <p className="text-center mb-3 fs-5">Create New Venue</p>
                 </Col>
-              )}
-            </Row>
+              </Row>
+
+              {/* List of User's Venues */}
+              <Row>
+                {venues && venues.length > 0 ? (
+                  venues.map((venue) => (
+                    <Col md={4} key={venue.id} className="mb-4">
+                      <VenueListCard
+                        venue={venue}
+                        buttonTypes={["edit", "view"]}
+                        onClick={(action, venueId) => {
+                          if (action === "edit") {
+                            setShowEditProfileModal(true);
+                          } else if (action === "view") {
+                            navigate(`/venueDetails/${venueId}`);
+                          }
+                        }}
+                        showCapacity={true}
+                        showPrice={true}
+                      />
+                    </Col>
+                  ))
+                ) : (
+                  <Col>
+                    <Alert variant="info" className="mt-4 text-center">
+                      You have no venues.
+                    </Alert>
+                  </Col>
+                )}
+              </Row>
+            </>
           )}
         </Tab>
       </Tabs>

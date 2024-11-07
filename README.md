@@ -57,6 +57,8 @@ FOLDER STRUCTURE AND GENERAL INFO
 
 - GEOCODING: I decided to build the geocoding query using available location details (address, city, country, continent) to get accurate lat/lng. This was necessary because the API has a mix of venues with incomplete and inconsistent location info.
 
+- API CALLS/ API HOOKS: Is used in specific page, but also accessed directly in modal components
+
 EXPLORE COMPONENT
 - i am storing location data in sessionStorage, and when hover it will check locations is the same as in sessionstorage, if not it will make a new api call and change it with the current location. i know this is not the best way, but for client side handling i made this decision.
 - Filtering by continent fetches all venues because the API doesn’t support continent-specific filtering. If it did, we wouldn’t need to fetch everything. I chose not to add more client-side filtering logic since the Explore component is already complex and full of code.

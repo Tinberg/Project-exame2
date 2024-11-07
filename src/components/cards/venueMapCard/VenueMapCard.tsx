@@ -30,12 +30,12 @@ const VenueMapCard: React.FC<VenueMapCardProps> = ({
         />
         <Card.Body className="bg-secondary">
           <Card.Title>{venue.name}</Card.Title>
-          <p>
+          <p className="city-country-p">
             {venue.location?.city || venue.location?.country
               ? `${venue.location.city ? venue.location.city : ""}${
                   venue.location.city && venue.location.country ? ", " : ""
                 }${venue.location.country ? venue.location.country : ""}`
-              : "Location not available"}
+              : ""}
           </p>
           <Button
             variant="primary"
