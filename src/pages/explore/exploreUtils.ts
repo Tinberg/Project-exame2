@@ -55,7 +55,7 @@ export const continents = [
   "Asia",
   "Europe",
   "North America",
-  "Oceania",
+  "Australia",
   "South America",
 ];
 

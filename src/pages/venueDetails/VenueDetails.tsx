@@ -186,7 +186,9 @@ function VenueDetails() {
         <Row>
           {/* Venue Image and Name */}
           <Col md={8} className="position-relative">
-            <h1 id="venue-name">{venue.name}</h1>
+            <h1 className="text-break" id="venue-name">
+              {venue.name}
+            </h1>
             {venue.location.city && venue.location.country ? (
               <p>
                 {venue.location.city}, {venue.location.country}
@@ -246,7 +248,9 @@ function VenueDetails() {
                     />
                     <div className="ms-3">
                       <p>
-                        <span className="fw-bolder">{venue.owner.name}</span>
+                        <span className="fw-bolder text-break">
+                          {venue.owner.name}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -254,7 +258,9 @@ function VenueDetails() {
                     <p>
                       <span className="fw-bolder">Bio:</span>
                     </p>
-                    <p>{venue.owner.bio || "No bio available"}</p>
+                    <p className="text-break">
+                      {venue.owner.bio || "No bio available"}
+                    </p>
                   </div>
                 </>
               )}
@@ -402,7 +408,7 @@ function VenueDetails() {
             <dl className="d-flex flex-column align-items-start mb-4">
               <div className="mb-2">
                 <dt>Description:</dt>
-                <dd className="ms-0">{venue.description}</dd>{" "}
+                <dd className="ms-0 text-break">{venue.description}</dd>{" "}
               </div>
               <div className="d-flex mb-1 ">
                 <dt className="me-2">Price per night:</dt>
@@ -488,7 +494,7 @@ function VenueDetails() {
             </p>
             {/* Weather information */}
             <div className="weather-widget my-0 my-lg-5">
-              <p className="fw-bold fs-5 mb-1">Current Weather:</p>{" "}
+              <p className="fw-bold fs-5 mb-1">Current Weather:</p>
               {coordinates === null ? (
                 <Alert variant="warning" className="text-center my-3">
                   Weather information unavailable.
@@ -499,9 +505,9 @@ function VenueDetails() {
                 </Alert>
               ) : weatherError ? (
                 <Alert variant="danger" className="text-center my-3">
-                  Unable to fetch weather data.
+                  {weatherError.message || "Unable to fetch weather data."}
                 </Alert>
-              ) : (
+              ) : weatherData ? (
                 <div className="d-flex mb-md-0 mb-3">
                   {weatherIconData && (
                     <span
@@ -514,14 +520,18 @@ function VenueDetails() {
                     {weatherData?.temperature}°C
                   </p>
                 </div>
+              ) : (
+                <Alert variant="warning" className="text-center my-3">
+                  Weather information unavailable.
+                </Alert>
               )}
             </div>
           </Col>
           <Col md={8}>
-            <div className="map-placeholder ">
+            <div className="map-placeholder">
               {coordinates ? (
                 <iframe
-                  className="w-100 border rounded "
+                  className="w-100 border rounded"
                   src={`https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}&hl=es;z=14&output=embed`}
                   allowFullScreen
                   loading="lazy"
@@ -530,13 +540,11 @@ function VenueDetails() {
                 <Alert variant="info" className="text-center my-3">
                   Loading map...
                 </Alert>
-              ) : geocodeError ? (
-                <Alert variant="danger" className="text-center my-3">
-                  Unable to load map for this location.
-                </Alert>
               ) : (
                 <Alert variant="warning" className="text-center my-3">
-                  Map information unavailable.
+                  {geocodeError
+                    ? "Unable to load map for this location."
+                    : "Map information unavailable."}
                 </Alert>
               )}
             </div>

@@ -40,14 +40,14 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
     return (
       <Col
         xs={12}
-        md={6}
+        // md={6}
         xl={12}
         className="mb-3 d-flex align-items-stretch venue-card-col"
         ref={ref}
       >
         <Card
           className="h-100 w-100"
-          onMouseEnter={onHover ? () => onHover(venue) : undefined}
+          onMouseEnter={onHover ? () => onHover(venue) : undefined} 
         >
           <Card.Img
             variant="top"

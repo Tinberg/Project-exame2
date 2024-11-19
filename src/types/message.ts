@@ -1,4 +1,4 @@
-export type MessageType = 'success' | 'error' | 'info' | 'warning';
+export type MessageType = 'success' | 'error' | 'info' | 'warning' | 'danger';
 
 export interface Message {
   type: MessageType;

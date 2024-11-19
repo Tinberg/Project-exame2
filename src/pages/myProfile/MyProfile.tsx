@@ -9,6 +9,7 @@ import {
   Tab,
   Alert,
 } from "react-bootstrap";
+import { Venue } from "../../schemas";
 import VenueListCard from "../../components/cards/venueListCard/VenueListCard";
 import Message from "../../components/message/message";
 import { calculateTotalPrice } from "../../utils/priceCalculator";
@@ -20,24 +21,43 @@ import {
 import { useDeleteBooking } from "../../hooks/apiHooks/useBookings";
 import { useMessage } from "../../hooks/generalHooks/useMessage";
 import { getUserName } from "../../services/api/authService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import CreateVenueModal from "../../components/modals/createVenueModal/CreateVenueModal";
 import EditProfileModal from "../../components/modals/editProfileModal/EditProfileModal";
+import EditVenueModal from "../../components/modals/editVenueModal/EditVenueModal";
 import newVenueImage from "../../assets/images/createNewVenue/newVenue.png";
 import "./myProfile.scss";
 
 const MyProfile: React.FC = () => {
   const userName = getUserName();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { message: navigationMessage } = location.state || {};
 
   //-- Modal visibility states --//
   const [showCreateVenueModal, setShowCreateVenueModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showEditVenueModal, setShowEditVenueModal] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
   // Message Component
   const { message, showMessage, clearMessage } = useMessage();
+
+  //-- Display message if navigated from BookingSection --//
+  useEffect(() => {
+    if (navigationMessage) {
+      showMessage("success", navigationMessage);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [navigationMessage, showMessage, navigate, location.pathname]);
 
   if (!userName) {
     navigate("/login");
@@ -61,14 +81,15 @@ const MyProfile: React.FC = () => {
     error: venuesError,
   } = useVenuesByProfile(userName, { _bookings: true });
 
-  //-- Cancel Booking --//
+  //-- Manage Bookings --//
+  const [bookings, setBookings] = useState(initialBookings || []);
+
   useEffect(() => {
     if (initialBookings) {
       setBookings(initialBookings);
     }
   }, [initialBookings]);
 
-  const [bookings, setBookings] = useState(initialBookings || []);
   const deleteBookingMutation = useDeleteBooking();
   const handleDeleteBooking = (bookingId: string) => {
     deleteBookingMutation.mutate(bookingId, {
@@ -89,6 +110,26 @@ const MyProfile: React.FC = () => {
           "We couldn’t cancel your booking at this time. Please check your connection or try again later"
         );
       },
+    });
+  };
+
+  //-- Manage Venues --//
+  const [venuesState, setVenuesState] = useState<Venue[]>(venues || []);
+
+  useEffect(() => {
+    if (venues) {
+      setVenuesState(venues);
+    }
+  }, [venues]);
+
+  const handleVenueDeleted = (deletedVenueId: string) => {
+    setVenuesState((prevVenues) =>
+      prevVenues.filter((venue) => venue.id !== deletedVenueId)
+    );
+    showMessage("success", "Venue deleted successfully.");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
     });
   };
 
@@ -129,7 +170,7 @@ const MyProfile: React.FC = () => {
       )}
 
       {/* Avatar and User Info */}
-      <Row className="align-items-center border-bottom border-secondary border-3 pb-5">
+      <Row className="align-items-center text-center text-md-start border-bottom border-secondary border-3 pb-5">
         <Col md={4} className="text-center">
           <Image
             src={
@@ -143,8 +184,11 @@ const MyProfile: React.FC = () => {
         </Col>
         <Col md={8}>
           <h1>{profile.name}</h1>
-          <p>{profile.email}</p>
-          {profile.bio && <p>{profile.bio}</p>}
+          <p className="bio-wrap">
+            {profile.bio
+              ? profile.bio
+              : "You haven't added a bio yet. Write something about yourself!"}
+          </p>
           <Button
             variant="primary"
             onClick={() => setShowEditProfileModal(true)}
@@ -158,7 +202,11 @@ const MyProfile: React.FC = () => {
       {message && <Message message={message} onClose={clearMessage} />}
 
       {/* Tabs Section */}
-      <Tabs defaultActiveKey="bookings" id="profile-tabs" className="mt-5">
+      <Tabs
+        defaultActiveKey="bookings"
+        id="profile-tabs"
+        className="mt-5 nav-justified flex-nowrap"
+      >
         <Tab eventKey="bookings" title="View and Manage Bookings">
           {isBookingsLoading ? (
             <Alert variant="info" className="text-center mt-4">
@@ -183,7 +231,13 @@ const MyProfile: React.FC = () => {
                 );
 
                 return (
-                  <Col xl={4}  key={booking.id} className="mb-4 justify-content-center align-items-center d-flex">
+                  /* List of Users Bookings */
+                  <Col
+                    lg={6}
+                    xl={4}
+                    key={booking.id}
+                    className="mb-4 justify-content-center align-items-center d-flex"
+                  >
                     <VenueListCard
                       venue={booking.venue}
                       buttonTypes={["cancel", "view"]}
@@ -233,12 +287,11 @@ const MyProfile: React.FC = () => {
                   className="d-flex flex-column align-items-center newVenueContainer"
                   onClick={() => setShowCreateVenueModal(true)}
                 >
-                  {" "}
                   {/* Image */}
                   <img
                     src={newVenueImage}
                     alt="Create New Venue"
-                    className="mb-3 newVenueImage "
+                    className="mb-3 newVenueImage"
                   />
                   {/* Icon */}
                   <FontAwesomeIcon
@@ -253,15 +306,21 @@ const MyProfile: React.FC = () => {
 
               {/* List of User's Venues */}
               <Row>
-                {venues && venues.length > 0 ? (
-                  venues.map((venue) => (
-                    <Col md={4} key={venue.id} className="mb-4">
+                {venuesState && venuesState.length > 0 ? (
+                  venuesState.map((venue) => (
+                    <Col lg={6} xl={4} key={venue.id} className="mb-4">
                       <VenueListCard
                         venue={venue}
                         buttonTypes={["edit", "view"]}
                         onClick={(action, venueId) => {
                           if (action === "edit") {
-                            setShowEditProfileModal(true);
+                            const venueToEdit = venuesState.find(
+                              (v) => v.id === venueId
+                            );
+                            if (venueToEdit) {
+                              setSelectedVenue(venueToEdit);
+                              setShowEditVenueModal(true);
+                            }
                           } else if (action === "view") {
                             navigate(`/venueDetails/${venueId}`);
                           }
@@ -289,6 +348,16 @@ const MyProfile: React.FC = () => {
         show={showCreateVenueModal}
         handleClose={() => setShowCreateVenueModal(false)}
       />
+
+      {/* Edit Venue Modal */}
+      {selectedVenue && (
+        <EditVenueModal
+          show={showEditVenueModal}
+          handleClose={() => setShowEditVenueModal(false)}
+          venue={selectedVenue}
+          onVenueDeleted={handleVenueDeleted}
+        />
+      )}
 
       {/* Edit Profile Modal */}
       <EditProfileModal

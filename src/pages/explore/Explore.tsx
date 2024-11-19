@@ -127,14 +127,19 @@ function Explore() {
     isError: isGeocodeError,
     error: geocodeError,
   } = useGeocode(
-    hoveredVenue && currentGeocodingVenueId === hoveredVenue.id
+    hoveredVenue &&
+      currentGeocodingVenueId === hoveredVenue.id &&
+      (hoveredVenue.location?.address ||
+        hoveredVenue.location?.city ||
+        hoveredVenue.location?.country ||
+        hoveredVenue.location?.continent)
       ? {
           address: hoveredVenue.location?.address,
           city: hoveredVenue.location?.city,
           country: hoveredVenue.location?.country,
           continent: hoveredVenue.location?.continent,
         }
-      : {}
+      : null
   );
 
   //-- Update Geocoded Venues State and Session Storage --//
@@ -160,7 +165,7 @@ function Explore() {
 
   //-- Handles venue hover to show the location on the map, using cached coordinates if available or fetching new data if the location has changed --//
   const handleVenueHover = (venue: Venue) => {
-    if (window.innerWidth < 1200) return;
+    if (window.innerWidth < 992) return;
 
     setUserInteracted(true);
     setHoveredVenue(venue);
@@ -311,20 +316,21 @@ function Explore() {
         </Row>
       </section>
 
-      {/* Venues List Section */}
+      {/* Venues List Section and Map */}
       <section aria-label="List of venues">
-        <Row>
-          <Col xl={3} lg={12} className="venues-list overflow-auto left-card">
-            <Row>
+        <div className="d-flex justify-content-center mt-4 mt-lg-3">
+          <div className="venues-list overflow-y-auto">
+            <Row className="w-100 m-0">
               {filteredVenues.map((venue: Venue) => (
-                <VenueListCard
-                  key={venue.id}
-                  venue={venue}
-                  buttonTypes={["view"]}
-                  onHover={handleVenueHover}
-                  onClick={() => handleVenueClick(venue.id)}
-                  aria-label={`Venue ${venue.name}`}
-                />
+                <Col className="ps-0 pe-0 " xs={12} key={venue.id}>
+                  <VenueListCard
+                    venue={venue}
+                    buttonTypes={["view"]}
+                    onHover={handleVenueHover}
+                    onClick={() => handleVenueClick(venue.id)}
+                    aria-label={`Venue ${venue.name}`}
+                  />
+                </Col>
               ))}
               {venues.length > 0 && (
                 <div
@@ -351,12 +357,11 @@ function Explore() {
                 </Alert>
               )}
             </Row>
-          </Col>
+          </div>
 
-          {/* Map Section */}
-          <Col
-            xl={9}
-            className="map-container position-sticky d-none d-xl-block"
+          {/* Map Container */}
+          <div
+            className="map-container position-sticky d-none d-lg-block flex-grow-1 ms-3"
             aria-label="Map of venues"
           >
             {isGeocodeError && (
@@ -373,7 +378,7 @@ function Explore() {
             {!hoveredLatLng && !isGeocodeError && userInteracted && (
               <Row>
                 <Col>
-                  <Alert variant="warning" className="text-center">
+                  <Alert variant="warning" className="text-center mb-0">
                     No valid location found for this venue. Displaying default
                     location.
                   </Alert>
@@ -394,8 +399,8 @@ function Explore() {
                 onViewDetails={handleVenueClick}
               />
             )}
-          </Col>
-        </Row>
+          </div>
+        </div>
       </section>
     </Container>
   );

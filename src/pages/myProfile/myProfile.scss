@@ -1,10 +1,23 @@
-.newVenueContainer {
-    cursor: pointer;
+@import "../../styles/global";
 
+// Styles for banner image and avatar image is located under editProfileModal.scss
+.nav-tabs .nav-link {
+  color: $font-color;
+}
+.nav-tabs .nav-item .nav-link.active {
+  color: $primary;
+}
+
+.newVenueContainer {
+  cursor: pointer;
 }
 
 .newVenueImage {
-    width: 100%; 
-    height: 300px;
-   
+  width: 100%;
+  height: 300px;
+}
+
+.bio-wrap {
+  white-space: pre-wrap;  
+  overflow-wrap: break-word; 
 }

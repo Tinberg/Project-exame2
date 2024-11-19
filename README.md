@@ -51,11 +51,12 @@ export default tseslint.config({
 
 FOLDER STRUCTURE AND GENERAL INFO
 
-- FOLDER STRUCTURE: types for api call and yup is under schemas and general defines for typescript is under types folder. in small component where the types only has to be defined in that componen it will stay in that file.
+- FOLDER STRUCTURE: types for api call under schemas and general defines for typescript is under types folder. in small component where the types only has to be defined in that componen it will stay in that file. yup validation is located in the component or a own file inside the folder of the component.
 
 - MESSAGE COMPONENT: Using Alert instead of the Message component for all messages that don't require a timer to clear. This simplifies the code where messages are static and don't need to be dismissed automatically.
 
 - GEOCODING: I decided to build the geocoding query using available location details (address, city, country, continent) to get accurate lat/lng. This was necessary because the API has a mix of venues with incomplete and inconsistent location info.
+- The CreateVenueModal and EditVenueModal use a button to trigger geocoding manually, reducing unnecessary API calls. In a scenario with free or unlimited geocoding, this button wouldn't be needed, and geocoding could happen automatically.
 
 - API CALLS/ API HOOKS: Is used in specific page, but also accessed directly in modal components
 
@@ -66,7 +67,7 @@ EXPLORE COMPONENT
 
 VENUE DETAILS COMPONENT
 
-- I kept image-related code here for simplicity( and bcs its only used here ), but if the page grows i would move it to a separate component for readability. 
+- I kept image-related code (and modal) here for simplicity( and bcs its only used here ), but if the page grows i would move it to a separate component for readability. 
 - this file also contain a lot of code, so i could made smaller components inside venueDetails forlder, but i kept it in this file with comments.
 
 
@@ -75,19 +76,15 @@ VENUE DETAILS COMPONENT
 
 
 
-venuedetials
 
+
+General 
+- gå igjennom modals de har lik message nå, men lag kommentarer.
+- modal for geocoding. fix location og finn ut en måte sånn at geocoding ikke blir triggered hele tiden. 
+- sjekk om geocoding fortsatt fungerer på explore og venueDetails
 
 
 
 venueDetails 
 - meet the owner link to myprofile
 
-modals forms 
-- put login and register to a own file with yup schemas and for the modals?
-
-MyProfile
-- check card component if it fit explore and myprofile and then index page. fix cancle bookings button and layout for smaller screens on cards  
-- fix alert to be consisten with other page
-- layout +++++
-- edit venue gir 500 error

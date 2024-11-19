@@ -1,13 +1,12 @@
-
-import { Media } from './media'; 
-import { Profile } from './profile';
-import { Booking } from './booking';
+import { Media } from "./media";
+import { Profile } from "./profile";
+import { Booking } from "./booking";
 
 export interface Venue {
   id: string;
   name: string;
   description: string;
-  media: Media[]; 
+  media: Media[];
   price: number;
   maxGuests: number;
   rating: number;
@@ -15,8 +14,8 @@ export interface Venue {
   updated: string;
   meta: Meta;
   location: Location;
-  owner?: Profile;   
-  bookings?: Booking[]; 
+  owner?: Profile;
+  bookings?: Booking[];
 }
 export interface PaginationMeta {
   isFirstPage: boolean;
@@ -28,12 +27,11 @@ export interface PaginationMeta {
   totalCount: number;
 }
 
-
 export interface VenuesResponse {
   data: Venue[];
   meta: PaginationMeta;
 }
- export interface Meta {
+export interface Meta {
   wifi: boolean;
   parking: boolean;
   breakfast: boolean;
@@ -53,10 +51,10 @@ export interface Location {
 export interface VenueCreationData {
   name: string;
   description: string;
-  media?: Media[];
-  price: number;
-  maxGuests: number;
-  rating?: number;
+  media: Media[];
+  price: number | null;
+  maxGuests: number | null;
+  rating: number;
   meta?: Partial<Meta>;
   location?: Partial<Location>;
 }

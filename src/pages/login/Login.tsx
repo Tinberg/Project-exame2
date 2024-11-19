@@ -10,7 +10,7 @@ import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
 import "./login.scss";
 
-// Yup Schema for validation (move to a own folder)
+// Yup Schema for validation 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")

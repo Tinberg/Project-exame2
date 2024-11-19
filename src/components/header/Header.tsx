@@ -68,7 +68,7 @@ function Header() {
           </ul>
 
           {/* Authentication buttons */}
-          <div className="auth-buttons d-flex align-items-center justify-content-center justify-content-sm-end">
+          <div className="auth-buttons d-flex align-items-center justify-content-center justify-content-sm-end ">
             {isLoggedIn ? (
               <div className="dropdown">
                 <button
@@ -89,7 +89,7 @@ function Header() {
                   </div>
                 </button>
                 <ul
-                  className="dropdown-menu dropdown-menu-end dropdown-menu-sm-start"
+                  className="dropdown-menu dropdown-menu-end dropdown-menu-sm-around mt-sm-1"
                   aria-labelledby="dropdownMenuLink"
                 >
                   <li>

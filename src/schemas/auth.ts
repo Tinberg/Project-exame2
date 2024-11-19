@@ -3,6 +3,7 @@ import { Media } from './media';
 export interface User {
   name: string;
   email: string;
+  bio?: string;
   avatar?: Media;
   banner?: Media;
   venueManager: boolean;

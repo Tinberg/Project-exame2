@@ -1,0 +1,18 @@
+@import "../../styles/global";
+
+.star-rating-container {
+  cursor: pointer;
+
+  .star {
+    color: gray;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $secondary;
+    }
+
+    &.star-active {
+      color: $primary;
+    }
+  }
+}

@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Button, Row, Col, Alert } from "react-bootstrap";
-import { useCreateVenue } from "../../../hooks/apiHooks/useVenues";
+import {
+  useUpdateVenue,
+  useDeleteVenue,
+} from "../../../hooks/apiHooks/useVenues";
 import { useGeocode } from "../../../hooks/apiHooks/useGeocoding";
-import { VenueCreationData } from "../../../schemas/venue";
-import { useNavigate } from "react-router-dom";
+import { Venue, VenueCreationData } from "../../../schemas/venue";
+
 import { useMessage } from "../../../hooks/generalHooks/useMessage";
 import MessageComponent from "../../../components/message/message";
 import {
@@ -20,25 +23,26 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import createVenueSchema from "../venueSchema";
 import "../VenueModal.scss";
 
-interface CreateVenueModalProps {
+interface EditVenueModalProps {
   show: boolean;
   handleClose: () => void;
+  venue: Venue | null;
+  onVenueDeleted: (deletedVenueId: string) => void;
 }
 
-const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
+const EditVenueModal: React.FC<EditVenueModalProps> = ({
   show,
   handleClose,
+  venue,
+  onVenueDeleted,
 }) => {
-  //-- Navigation and API mutations setup --//
-  const navigate = useNavigate();
-  const createVenueMutation = useCreateVenue();
+  //-- Navigation, message and API setup --//
+  const updateVenueMutation = useUpdateVenue(venue?.id || "");
+  const deleteVenueMutation = useDeleteVenue(venue?.id || "");
   const { message, showMessage, clearMessage } = useMessage();
   const [geocodeRequested, setGeocodeRequested] = useState(false);
   const [locationValid, setLocationValid] = useState(true);
-  const handleFindLocation = () => {
-    setGeocodeLocation(getLocationCopy());
-    setGeocodeRequested(true);
-  };
+
   //-- Form setup with react-hook-form and validation schema --//
   const {
     register,
@@ -47,6 +51,7 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm<VenueCreationData>({
     resolver: yupResolver(createVenueSchema),
     defaultValues: {
@@ -68,6 +73,53 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
       },
     },
   });
+
+  //-- Update form with venue data when `venue` changes --//
+  useEffect(() => {
+    if (venue) {
+      reset({
+        name: venue.name || "",
+        description: venue.description || "",
+        price: venue.price || null,
+        maxGuests: venue.maxGuests || null,
+        media:
+          venue.media && venue.media.length > 0
+            ? venue.media.map((mediaItem) => ({
+                url: mediaItem.url || "",
+                alt: mediaItem.alt || "",
+              }))
+            : [{ url: "", alt: "" }],
+        rating: venue.rating || 0,
+        meta: venue.meta || {},
+        location: {
+          address: venue.location?.address || "",
+          city: venue.location?.city || "",
+          zip: venue.location?.zip || "",
+          country: venue.location?.country || "",
+          continent: venue.location?.continent || "",
+          lat: venue.location?.lat || undefined,
+          lng: venue.location?.lng || undefined,
+        },
+      });
+      setShowDeleteAlert(false);
+      resetGeocodingState(); // Reset geocoding state when venue changes
+    }
+  }, [venue, reset]);
+
+  //-- Function to reset geocoding state --//
+  const resetGeocodingState = () => {
+    setGeocodeRequested(false);
+    setLocationValid(true);
+    setGeocodeLocation({});
+  };
+
+  //-- Reset geocoding state when modal is closed --//
+  useEffect(() => {
+    if (!show) {
+      resetGeocodingState();
+    }
+  }, [show]);
+
   //-- Media field array setup for dynamic inputs --//
   const { fields, append, remove } = useFieldArray({
     control,
@@ -77,7 +129,6 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
   //-- Manage geocoding: watch location, fetch lat/lng, update form, and handle venue submission --//
   const locationValues = watch("location");
   const [geocodeLocation, setGeocodeLocation] = useState({});
-
   const {
     data: latLng,
     error: geocodeError,
@@ -89,43 +140,67 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
     if (latLng) {
       setValue("location.lat", latLng.lat);
       setValue("location.lng", latLng.lng);
-      setLocationValid(true); 
+      setLocationValid(true);
     } else if (!isGeocoding && geocodeRequested) {
       setValue("location.lat", undefined);
       setValue("location.lng", undefined);
-      setLocationValid(false); 
+      setLocationValid(false);
     }
   }, [latLng, isGeocoding, geocodeRequested, setValue]);
 
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
   const onSubmit = (data: VenueCreationData) => {
     if (!locationValid) {
-      showMessage("danger", "Please provide a valid location before creating the venue.");
-      return; 
+      showMessage(
+        "danger",
+        "Please provide a valid location before submitting."
+      );
+      return;
     }
-  
-    createVenueMutation.mutate(data, {
-      onSuccess: (responseData) => {
+
+    updateVenueMutation.mutate(data, {
+      onSuccess: () => {
         handleClose();
-        navigate(`/venueDetails/${responseData.id}`);
       },
       onError: () => {
-        showMessage(
-          "danger",
-          "Something went wrong. Please check your details and try again."
-        );
+        showMessage("danger", "Failed to update the venue. Please try again.");
       },
     });
   };
-  
 
   const getLocationCopy = () => ({ ...locationValues });
 
+  const handleDelete = () => {
+    deleteVenueMutation.mutate(undefined, {
+      onSuccess: () => {
+        handleClose();
+        if (venue?.id) {
+          onVenueDeleted(venue.id);
+        }
+      },
+      onError: () => {
+        showMessage("danger", "Failed to delete the venue. Please try again.");
+      },
+    });
+  };
+
   return (
-    <Modal className="ps-0" show={show} onHide={handleClose} size="lg" centered>
+    <Modal
+      className="ps-0"
+      show={show}
+      onHide={handleClose}
+      size="lg"
+      centered
+    >
       <Modal.Header closeButton>
-        <Modal.Title>Create New Venue</Modal.Title>
+        <Modal.Title>Edit Venue</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {/* Display message if there is one */}
+        {message && (
+          <MessageComponent message={message} onClose={clearMessage} />
+        )}
         <Form onSubmit={handleSubmit(onSubmit)}>
           {/* Venue Image Section */}
           <div className="text-center mb-4">
@@ -300,7 +375,9 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
                         <span className="facility-icon me-2">
                           {iconMap[key]}
                         </span>
-                        <span className="facility-label">{labelMap[key]}</span>
+                        <span className="facility-label">
+                          {labelMap[key]}
+                        </span>
                       </div>
                       <Form.Check
                         className="fs-4"
@@ -436,7 +513,13 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
 
             {/* Find Location Button */}
             <div className="text-center mt-3">
-              <Button variant="primary" onClick={handleFindLocation}>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setGeocodeLocation(getLocationCopy());
+                  setGeocodeRequested(true);
+                }}
+              >
                 Find Location
               </Button>
             </div>
@@ -457,8 +540,8 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
               <>
                 <Alert variant="success" className="mt-3">
                   <strong>Position Found!</strong> Please verify that the
-                  location on the map matches the address details and ensure all
-                  information is correct.
+                  location on the map matches the address details and ensure
+                  all information is correct.
                 </Alert>
                 <div className="mt-3 d-flex justify-content-center">
                   <p className="me-4">Lat: {latLng.lat}</p>
@@ -477,23 +560,48 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
               </>
             )}
           </Form.Group>
-
-          {/* Display warning message if there is one */}
-          {message && (
-            <MessageComponent message={message} onClose={clearMessage} />
-          )}
-
           <div className="text-center border-top border-2 mt-5">
+            {/* Delete Venue Button */}
+            <div className="text-center mt-3">
+              {showDeleteAlert && (
+                <Alert variant="danger" className="mb-3">
+                  Are you sure you want to delete this venue? This action
+                  cannot be undone. Click "Delete" again to confirm.
+                </Alert>
+              )}
+
+              <Button
+                variant="danger"
+                onClick={() => {
+                  if (showDeleteAlert) {
+                    handleDelete();
+                  } else {
+                    setShowDeleteAlert(true);
+                  }
+                }}
+                disabled={deleteVenueMutation.status === "pending"}
+              >
+                {deleteVenueMutation.status === "pending"
+                  ? "Deleting Venue..."
+                  : showDeleteAlert
+                  ? "Confirm Delete"
+                  : "Delete Venue"}
+              </Button>
+            </div>
             <Button
               variant="primary"
               type="submit"
-              className="mt-4"
-              disabled={createVenueMutation.status === "pending"}
+              className="mt-4 px-4"
+              disabled={updateVenueMutation.status === "pending"}
             >
-              {createVenueMutation.status === "pending"
-                ? "Creating Venue..."
-                : "Create Venue"}
+              {updateVenueMutation.status === "pending"
+                ? "Updating Venue..."
+                : "Update Venue"}
             </Button>
+            {/* Display warning message if there is one */}
+            {message && (
+              <MessageComponent message={message} onClose={clearMessage} />
+            )}
           </div>
         </Form>
       </Modal.Body>
@@ -506,4 +614,4 @@ const CreateVenueModal: React.FC<CreateVenueModalProps> = ({
   );
 };
 
-export default CreateVenueModal;
+export default EditVenueModal;
