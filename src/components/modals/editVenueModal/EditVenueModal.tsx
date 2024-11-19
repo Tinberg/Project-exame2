@@ -21,7 +21,7 @@ import StarRating from "../../../components/starRating/StarRating";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import createVenueSchema from "../venueSchema";
-import "../VenueModal.scss";
+import "../venueModal.scss";
 
 interface EditVenueModalProps {
   show: boolean;
