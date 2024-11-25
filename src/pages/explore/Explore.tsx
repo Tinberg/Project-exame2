@@ -122,7 +122,11 @@ function Explore() {
   ]);
 
   //-- Geocode Hovered Venue Location if Needed --//
-  const { data: latLng, isError: isGeocodeError } = useGeocode(
+  const {
+    data: latLng,
+    isError: isGeocodeError,
+    error: geocodeError,
+  } = useGeocode(
     hoveredVenue &&
       currentGeocodingVenueId === hoveredVenue.id &&
       (hoveredVenue.location?.address ||
@@ -274,8 +278,9 @@ function Explore() {
           {/* Sort By Dropdown */}
           <Col md={6}>
             <Form.Group controlId="sortBy">
-              <Form.Label>Sort By</Form.Label>
+              <Form.Label id="sort-by-label">Sort By</Form.Label>
               <Form.Select
+                aria-labelledby="sort-by-label"
                 value={selectedSortOption}
                 onChange={handleSortChange}
               >
@@ -291,8 +296,11 @@ function Explore() {
           {/* Filter by Continent Dropdown */}
           <Col md={6}>
             <Form.Group controlId="continentFilter">
-              <Form.Label>Filter by Continent</Form.Label>
+              <Form.Label id="continent-filter-label">
+                Filter by Continent
+              </Form.Label>
               <Form.Select
+                aria-labelledby="continent-filter-label"
                 value={continentFilter}
                 onChange={handleContinentFilterChange}
               >
@@ -356,31 +364,27 @@ function Explore() {
             className="map-container position-sticky d-none d-lg-block flex-grow-1 ms-3"
             aria-label="Map of venues"
           >
-            {/* Invalid location (geocoding failed) */}
             {isGeocodeError && (
               <Row>
                 <Col>
-                  <Alert variant="warning" className="text-center mb-0">
-                    We couldn’t find the exact location for this venue. Please
-                    check the address details. Displaying the default location.
+                  <Alert variant="warning" className="text-center">
+                    We’re unable to find the exact location for this venue right
+                    now.
+                    {geocodeError && ` More details: ${geocodeError.message}`}
                   </Alert>
                 </Col>
               </Row>
             )}
-
-            {/* No location set */}
             {!hoveredLatLng && !isGeocodeError && userInteracted && (
               <Row>
                 <Col>
                   <Alert variant="warning" className="text-center mb-0">
-                    This venue does not have a location set. Displaying the
-                    default location.
+                    No valid location found for this venue. Displaying default
+                    location.
                   </Alert>
                 </Col>
               </Row>
             )}
-
-            {/* Render Google Map */}
             <GoogleMap
               mapContainerClassName="w-100 h-100"
               zoom={12}
@@ -389,7 +393,6 @@ function Explore() {
               {hoveredLatLng && <Marker position={hoveredLatLng} />}
             </GoogleMap>
 
-            {/* Venue details card */}
             {hoveredVenue && hoveredLatLng && (
               <VenueMapCard
                 venue={hoveredVenue}

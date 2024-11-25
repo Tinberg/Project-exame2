@@ -166,23 +166,26 @@ const Register: React.FC = () => {
                     >
                       <span>
                         <FaQuestionCircle
-                          style={{ cursor: "pointer" }}
+                          className="fa-question-circle"
                           aria-label="Venue Manager Info"
                         />
                       </span>
                     </OverlayTrigger>
                   </div>
+                  {/* Toggle Switch with Hidden Label */}
                   <div className="d-flex align-items-center mt-2">
+                    <Form.Label className="visually-hidden">
+                      Enable Venue Manager
+                    </Form.Label>
                     <Form.Check
                       type="switch"
                       id="venueManagerSwitch"
-                      label=""
                       checked={venueManager}
                       onChange={(e) => setVenueManager(e.target.checked)}
                       className="me-2"
                     />
                     {/* Dynamic Text Next to the Toggle */}
-                    <Form.Text className="text-muted">
+                    <Form.Text className="text-muted align-items-center mt-0">
                       {venueManager
                         ? "You are a venue manager."
                         : "You are not a venue manager."}
