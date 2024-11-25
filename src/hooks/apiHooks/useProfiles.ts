@@ -61,16 +61,19 @@ export const useBookingsByProfile = (
 // Get all venues by profile
 export const useVenuesByProfile = (
   name: string,
-  params?: { _bookings?: boolean; page?: number; limit?: number; sort?: string }
+  params?: {
+    _bookings?: boolean;
+    _bookings_customer?: boolean;
+    page?: number;
+    limit?: number;
+    sort?: string;
+  }
 ) => {
   return useQuery<Venue[], Error>({
     queryKey: ["profile-venues", name, params],
     queryFn: () => getVenuesByProfile(name, params),
   });
 };
-
-
-
 
 // // Search profiles (For potential use in future)
 // export const useSearchProfiles = (query: string) => {

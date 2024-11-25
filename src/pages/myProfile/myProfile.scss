@@ -1,6 +1,13 @@
 @import "../../styles/global";
+ .profile-banner {
+  height: 300px;
+}
+ .avatar-image {
+  width: 150px;
+  height: 150px;
+}
 
-// Styles for banner image and avatar image is located under editProfileModal.scss
+
 .nav-tabs .nav-link {
   color: $font-color;
 }
@@ -18,6 +25,10 @@
 }
 
 .bio-wrap {
-  white-space: pre-wrap;  
-  overflow-wrap: break-word; 
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
 }

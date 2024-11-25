@@ -1,7 +1,8 @@
 @import "../../styles/global";
 
 .navbar-custom .nav-link-custom,
-.navbar-custom a, .user-name {
+.navbar-custom a,
+.user-name {
   color: $font-color;
 
   &:hover {
@@ -15,6 +16,10 @@
   height: 45px;
 }
 
+.navbar .dropdown-item:hover {
+  background-color: $hover-color;
+  color: #fff;
+}
 // Responsive navbar
 @media (max-width: 576px) {
   .navbar-collapse {
@@ -27,4 +32,3 @@
     margin-bottom: 10px;
   }
 }
-

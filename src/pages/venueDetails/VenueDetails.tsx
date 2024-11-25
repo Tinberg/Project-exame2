@@ -1,23 +1,11 @@
-// React and Router Imports
-import React, { useState, useRef, useEffect } from "react";
-import { useParams } from "react-router-dom";
-// API Hooks
+import React, { useState, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useVenueById } from "../../hooks/apiHooks/useVenues";
 import { useGeocode } from "../../hooks/apiHooks/useGeocoding";
 import { useWeather } from "../../hooks/generalHooks/useWeather";
-// Utility Functions
 import { getWeatherIcon } from "./venueUtils";
-// Bootstrap Components
-import {
-  Alert,
-  Container,
-  Row,
-  Col,
-  Image,
-  Button,
-  Modal,
-} from "react-bootstrap";
-// FontAwesome Icons
+import { getUserName } from "../../services/api/authService";
+import { Alert, Container, Row, Col, Image, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar,
@@ -26,13 +14,10 @@ import {
   faPaw,
   faWifi,
   faImages,
-  faArrowLeft,
-  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
-// Static Assets
 import defaultImage from "../../assets/images/venueImage/noVenueImage.jpg";
-// Local Components and Styles
 import BookingSection from "../../components/calendar/calendar";
+import ImageGalleryModal from "../../components/modals/imageGalleryModal/ImageGalleryModal";
 import "./venueDetails.scss";
 
 function VenueDetails() {
@@ -80,53 +65,11 @@ function VenueDetails() {
       ? getWeatherIcon(weatherData.weathercode)
       : null;
 
-  //-- Image Modal State and Handlers --//
+  //-- Image Modal State --//
   const [showImagesModal, setShowImagesModal] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
-    null
-  );
 
   const handleShowImagesModal = () => setShowImagesModal(true);
-  const handleCloseImagesModal = () => {
-    setShowImagesModal(false);
-    setSelectedImageIndex(null);
-  };
-  const handleSelectImage = (index: number) => {
-    setSelectedImageIndex(index);
-    setShowImagesModal(false);
-  };
-  const handleCloseSelectedImage = () => setSelectedImageIndex(null);
-
-  //-- Image Navigation Handlers --//
-  const showNextImage = () => {
-    if (
-      selectedImageIndex !== null &&
-      selectedImageIndex < (venue?.media.length ?? 0) - 1
-    ) {
-      setSelectedImageIndex((prev) => (prev !== null ? prev + 1 : 0));
-    }
-  };
-  const showPrevImage = () => {
-    if (selectedImageIndex !== null && selectedImageIndex > 0) {
-      setSelectedImageIndex((prev) => (prev !== null ? prev - 1 : 0));
-    }
-  };
-
-  //-- Keyboard Navigation for Image Modal --//
-  useEffect(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") showNextImage();
-      else if (event.key === "ArrowLeft") showPrevImage();
-    };
-
-    if (selectedImageIndex !== null) {
-      window.addEventListener("keydown", handleKeydown);
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeydown);
-    };
-  }, [selectedImageIndex]);
+  const handleCloseImagesModal = () => setShowImagesModal(false);
 
   //-- Refs for Section Scrolling --//
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -175,11 +118,6 @@ function VenueDetails() {
     );
   }
 
-  //-- Data used to manage image selection in the modal --//
-  const imageCount = venue.media.length;
-  const selectedImage =
-    selectedImageIndex !== null ? venue.media[selectedImageIndex] : null;
-
   return (
     <Container className="venue-details-container mt-5">
       <section aria-labelledby="venue-name">
@@ -223,7 +161,7 @@ function VenueDetails() {
                 onClick={handleShowImagesModal}
                 aria-label="Show All Images"
               >
-                {`Show Images (${imageCount})`}
+                {`Show Images (${venue.media.length})`}
               </Button>
             </div>
           </Col>
@@ -237,23 +175,31 @@ function VenueDetails() {
               <h2 className="mb-3">Meet The Owner</h2>
               {venue.owner && (
                 <>
-                  <div className="d-flex align-items-center my-4">
-                    <Image
-                      src={
-                        venue.owner.avatar?.url ||
-                        "../../assets/images/profileImagee/noProfileImage.png"
-                      }
-                      roundedCircle
-                      className="owner-avatar"
-                    />
-                    <div className="ms-3">
-                      <p>
-                        <span className="fw-bolder text-break">
-                          {venue.owner.name}
-                        </span>
-                      </p>
+                  <Link
+                    to={
+                      venue.owner.name === getUserName()
+                        ? "/myProfile"
+                        : `/profile/${venue.owner.name}`
+                    }
+                  >
+                    <div className="d-flex align-items-center my-4">
+                      <Image
+                        src={
+                          venue.owner.avatar?.url ||
+                          "../../assets/images/profileImagee/noProfileImage.png"
+                        }
+                        roundedCircle
+                        className="owner-avatar"
+                      />
+                      <div className="ms-3">
+                        <p>
+                          <span className="fw-bolder text-break">
+                            {venue.owner.name}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                   <div className="mb-4">
                     <p>
                       <span className="fw-bolder">Bio:</span>
@@ -268,100 +214,13 @@ function VenueDetails() {
           </Col>
         </Row>
       </section>
-      {/* Modal for Image Gallery */}
-      <Modal
-        show={showImagesModal && selectedImageIndex === null}
-        onHide={handleCloseImagesModal}
-        size="xl"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Image Gallery</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row>
-            {venue.media.map((image, index) => (
-              <Col md={4} key={index} className="mb-3">
-                <Image
-                  src={image.url}
-                  alt={image.alt}
-                  className="img-gallery-modal img-fluid rounded"
-                  onClick={() => handleSelectImage(index)}
-                />
-              </Col>
-            ))}
-          </Row>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            className="border border-2"
-            variant="secondary"
-            onClick={handleCloseImagesModal}
-            aria-label="Close Image modal"
-          >
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
-      {/* Modal for Full-Size Image */}
-      {selectedImage && (
-        <Modal show={true} onHide={handleCloseSelectedImage} size="xl" centered>
-          <Modal.Header closeButton>
-            <Modal.Title>{selectedImage?.alt || "Image Details"}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="d-flex justify-content-center align-items-center position-relative">
-            {/* Left arrow */}
-            <Button
-              className="position-absolute start-0 top-50 translate-middle-y"
-              onClick={showPrevImage}
-              variant="light"
-              aria-label="Previous Image"
-            >
-              <FontAwesomeIcon icon={faArrowLeft} />
-            </Button>
-
-            {/* Image */}
-            <Image
-              src={selectedImage.url}
-              alt={selectedImage.alt}
-              className="img-fluid rounded"
-            />
-
-            {/* Right arrow */}
-            <Button
-              className="position-absolute end-0 top-50 translate-middle-y"
-              onClick={showNextImage}
-              variant="light"
-              aria-label="Next Image"
-            >
-              <FontAwesomeIcon icon={faArrowRight} />
-            </Button>
-          </Modal.Body>
-
-          {/* Image counter */}
-          <div className="text-center mt-3">
-            <p>
-              Image {selectedImageIndex !== null ? selectedImageIndex + 1 : 0}{" "}
-              of {imageCount}
-            </p>
-          </div>
-
-          <Modal.Footer>
-            <Button
-              className="border border-2"
-              variant="secondary"
-              aria-label="Close Image modal"
-              onClick={() => {
-                handleCloseSelectedImage();
-                setShowImagesModal(true);
-              }}
-            >
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal
+        images={venue.media}
+        show={showImagesModal}
+        onClose={handleCloseImagesModal}
+      />
 
       {/* Page navigation */}
       <div
@@ -458,7 +317,16 @@ function VenueDetails() {
       </section>
       {/* Book Now Section/Calendar */}
       <div ref={bookRef} className="my-5">
-        <BookingSection venue={venue} />
+        {venue.owner?.name === getUserName() ? (
+          <div className="text-center opacity-50">
+            <Alert variant="warning">
+              As the owner of this venue, you cannot make a booking for your own
+              property.
+            </Alert>
+          </div>
+        ) : (
+          <BookingSection venue={venue} />
+        )}
       </div>
 
       {/* Location Section */}
@@ -560,21 +428,31 @@ function VenueDetails() {
         <h2 id="meet-the-owner-mobile">Meet The Owner</h2>
         {venue.owner && (
           <>
-            <div className="d-flex align-items-center my-4">
-              <Image
-                src={
-                  venue.owner.avatar?.url ||
-                  "../../assets/images/profileImagee/noProfileImage.png"
-                }
-                roundedCircle
-                className="owner-avatar"
-              />
-              <div className="ms-3">
-                <p>
-                  <span className="fw-bold">{venue.owner.name}</span>
-                </p>
-              </div>
-            </div>
+            {" "}
+            <Link
+              to={
+                venue.owner.name === getUserName()
+                  ? "/myProfile"
+                  : `/profile/${venue.owner.name}`
+              }
+              className="text-decoration-none text-dark"
+            >
+              <div className="d-flex align-items-center my-4">
+                <Image
+                  src={
+                    venue.owner.avatar?.url ||
+                    "../../assets/images/profileImagee/noProfileImage.png"
+                  }
+                  roundedCircle
+                  className="owner-avatar"
+                />
+                <div className="ms-3">
+                  <p>
+                    <span className="fw-bold">{venue.owner.name}</span>
+                  </p>
+                </div>
+              </div>{" "}
+            </Link>
             <div className="mb-4">
               <p>
                 <span className="fw-bold">Bio:</span>

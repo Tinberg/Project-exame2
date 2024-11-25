@@ -1,15 +1,25 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import * as Yup from "yup";
-import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Container,
+  Row,
+  Col,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import { useMessage } from "../../hooks/generalHooks/useMessage";
 import Message from "../../components/message/message";
 import { useRegisterUser } from "../../hooks/apiHooks/useAuth";
 import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
+import { FaQuestionCircle } from "react-icons/fa";
 import "./register.scss";
 
-// Yup Schema for validation (move to a own folder)
+// Yup Schema for validation
 const registrationSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
   email: Yup.string()
@@ -28,12 +38,13 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [venueManager, setVenueManager] = useState<boolean>(false);
   const navigate = useNavigate();
 
   // Custom hook for managing messages (errors, success)
   const { message, showMessage, clearMessage } = useMessage();
 
-  // Register APi call
+  // Register API call
   const { mutate: registerUser, status } = useRegisterUser();
   const isLoading = status === "pending";
 
@@ -41,7 +52,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     clearMessage();
 
-    const formData = { username, email, password };
+    const formData = { username, email, password, venueManager };
 
     try {
       // Validate form data with Yup
@@ -52,11 +63,11 @@ const Register: React.FC = () => {
           name: username,
           email,
           password,
-          venueManager: false,
+          venueManager,
         },
         {
           onSuccess: () => {
-            // Show success message and navigate login page
+            // Show success message and navigate to login page
             navigate("/login", {
               state: {
                 successMessage: "Registration successful! Please log in.",
@@ -100,6 +111,7 @@ const Register: React.FC = () => {
                 manage your own rental spaces.
               </p>
               <Form onSubmit={handleRegister}>
+                {/* Username Field */}
                 <Form.Group className="mb-3" controlId="username">
                   <Form.Label>Username</Form.Label>
                   <Form.Control
@@ -111,6 +123,7 @@ const Register: React.FC = () => {
                   />
                 </Form.Group>
 
+                {/* Email Field */}
                 <Form.Group className="mb-3" controlId="email">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
@@ -122,6 +135,7 @@ const Register: React.FC = () => {
                   />
                 </Form.Group>
 
+                {/* Password Field */}
                 <Form.Group className="mb-3" controlId="password">
                   <Form.Label>Password</Form.Label>
                   <Form.Control
@@ -133,10 +147,55 @@ const Register: React.FC = () => {
                   />
                 </Form.Group>
 
+                {/* Venue Manager Toggle */}
+                <Form.Group controlId="venueManager" className="mt-3">
+                  <div className="d-flex align-items-center">
+                    <Form.Label className="mb-0 me-2">Venue Manager</Form.Label>
+                    {/* Venue Manager Tooltip */}
+                    <OverlayTrigger
+                      placement="top"
+                      overlay={
+                        <Tooltip
+                          id="tooltip-venueManager"
+                          className="custom-tooltip"
+                        >
+                          Venue Managers can create and manage rental venues.
+                          You can change this setting later in your profile.
+                        </Tooltip>
+                      }
+                    >
+                      <span>
+                        <FaQuestionCircle
+                          style={{ cursor: "pointer" }}
+                          aria-label="Venue Manager Info"
+                        />
+                      </span>
+                    </OverlayTrigger>
+                  </div>
+                  <div className="d-flex align-items-center mt-2">
+                    <Form.Check
+                      type="switch"
+                      id="venueManagerSwitch"
+                      label=""
+                      checked={venueManager}
+                      onChange={(e) => setVenueManager(e.target.checked)}
+                      className="me-2"
+                    />
+                    {/* Dynamic Text Next to the Toggle */}
+                    <Form.Text className="text-muted">
+                      {venueManager
+                        ? "You are a venue manager."
+                        : "You are not a venue manager."}
+                    </Form.Text>
+                  </div>
+                </Form.Group>
+
+                {/* Display Messages */}
                 {message && (
                   <Message message={message} onClose={clearMessage} />
                 )}
 
+                {/* Submit Button */}
                 <div className="d-grid mt-3">
                   <Button variant="primary" type="submit" disabled={isLoading}>
                     {isLoading ? "Registering..." : "Register"}
@@ -146,7 +205,10 @@ const Register: React.FC = () => {
 
               <div className="mt-3 text-center">
                 <p>
-                  Already have an account? <Link to="/login">Log in here.</Link>
+                  Already have an account?{" "}
+                  <Link className="text-decoration-underline" to="/login">
+                    Log in here.
+                  </Link>
                 </p>
               </div>
             </Card.Body>

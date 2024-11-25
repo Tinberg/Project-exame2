@@ -10,7 +10,7 @@ import { AxiosError } from "axios";
 import { ErrorResponse } from "../../schemas/auth";
 import "./login.scss";
 
-// Yup Schema for validation 
+// Yup Schema for validation
 const loginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
@@ -152,7 +152,7 @@ const Login: React.FC = () => {
               <div className="mt-3 text-center">
                 <p>
                   Don't have an account?{" "}
-                  <Link to="/register">Sign up here.</Link>
+                  <Link className="text-decoration-underline" to="/register">Sign up here.</Link>
                 </p>
               </div>
             </Card.Body>

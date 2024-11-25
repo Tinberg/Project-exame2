@@ -11,7 +11,7 @@ import {
 import { getUserName } from "../../../services/api/authService";
 import { useMessage } from "../../../hooks/generalHooks/useMessage";
 import Message from "../../../components/message/message";
-import "./editProfileModal.scss";
+import "./editProfileModal.scss"
 
 //-- Default image URLs --//
 const defaultAvatarUrl =
@@ -156,7 +156,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             {/* Avatar Image Section */}
             <div className="text-center mb-4">
               <p className="fw-bold mb-4">Avatar Image</p>
-              <div className="avatar-image-container imageContainer d-flex align-items-center justify-content-center m-auto border rounded-circle overflow-hidden">
+              <div className="avatar-image-container d-flex align-items-center justify-content-center m-auto border rounded-circle overflow-hidden">
                 <Image
                   src={avatarPreview}
                   alt="Avatar Preview"
@@ -201,7 +201,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             {/* Banner Image Section */}
             <div className="text-center my-4 pt-4 text-center border-top border-">
               <p className="fw-bold mb-4">Banner Image</p>
-              <div className="banner-image-container imageContainer d-flex align-items-center justify-content-center m-auto border overflow-hidden w-100">
+              <div className="banner-image-container d-flex align-items-center justify-content-center m-auto border overflow-hidden w-100">
                 <Image
                   src={bannerPreview}
                   alt="Banner Preview"

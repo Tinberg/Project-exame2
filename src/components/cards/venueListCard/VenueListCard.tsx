@@ -1,3 +1,5 @@
+
+
 import { forwardRef, ReactNode } from "react";
 import { Card, Button, Col } from "react-bootstrap";
 import { Venue } from "../../../schemas/venue";
@@ -40,14 +42,13 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
     return (
       <Col
         xs={12}
-        // md={6}
         xl={12}
         className="mb-3 d-flex align-items-stretch venue-card-col"
         ref={ref}
       >
         <Card
           className="h-100 w-100"
-          onMouseEnter={onHover ? () => onHover(venue) : undefined} 
+          onMouseEnter={onHover ? () => onHover(venue) : undefined}
         >
           <Card.Img
             variant="top"
@@ -99,8 +100,7 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
             {/* Capacity and Price */}
             {showCapacity && (
               <p>
-                <span className="fw-bold">Capacity:</span> {venue.maxGuests}{" "}
-                Guests
+                <span className="fw-bold">Capacity:</span> {venue.maxGuests} Guests
               </p>
             )}
             {showPrice && (
@@ -109,7 +109,7 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
               </p>
             )}
 
-            {/*  Buttons Based on buttonTypes */}
+            {/* Buttons Based on buttonTypes */}
             {buttonTypes.map((type) => (
               <Button
                 key={type}
@@ -118,6 +118,8 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
                     ? "danger"
                     : type === "edit"
                     ? "warning"
+                    : type === "bookings"
+                    ? "info"
                     : "primary"
                 }
                 className="w-100 mb-2"
@@ -127,6 +129,8 @@ const VenueListCard = forwardRef<HTMLDivElement, VenueListCardProps>(
                   ? "Cancel Booking"
                   : type === "edit"
                   ? "Edit Venue"
+                  : type === "bookings"
+                  ? "Show Bookings"
                   : "View Details"}
               </Button>
             ))}

@@ -22,7 +22,7 @@ function Footer() {
                 <Link to="/">Home</Link>
               </li>
               <li>
-                <Link to="/venues">All Venues</Link>
+                <Link to="/explore">All Venues</Link>
               </li>
               <li>
                 <Link to="/about">About Us</Link>

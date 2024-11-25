@@ -93,7 +93,10 @@ function Header() {
                   aria-labelledby="dropdownMenuLink"
                 >
                   <li>
-                    <Link className="dropdown-item" to="/myProfile">
+                    <Link
+                      className="dropdown-item text-decoration-none"
+                      to="/myProfile"
+                    >
                       <FontAwesomeIcon icon={faUser} className="me-2" />
                       Go to Profile
                     </Link>

@@ -8,6 +8,13 @@
 }
 
 .card.transparent-card {
-    background-color: rgba($secondary, 0.45);
-    backdrop-filter: blur(25px); 
-  }
+  background-color: rgba($secondary, 0.45);
+  backdrop-filter: blur(25px);
+}
+
+.custom-tooltip .tooltip-inner {
+  background-color: var(--bs-primary);
+  color: white;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+}

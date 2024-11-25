@@ -16,6 +16,7 @@ export interface Venue {
   location: Location;
   owner?: Profile;
   bookings?: Booking[];
+  
 }
 export interface PaginationMeta {
   isFirstPage: boolean;
