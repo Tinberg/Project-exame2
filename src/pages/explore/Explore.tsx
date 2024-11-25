@@ -274,9 +274,8 @@ function Explore() {
           {/* Sort By Dropdown */}
           <Col md={6}>
             <Form.Group controlId="sortBy">
-              <Form.Label id="sort-by-label">Sort By</Form.Label>
+              <Form.Label>Sort By</Form.Label>
               <Form.Select
-                aria-labelledby="sort-by-label"
                 value={selectedSortOption}
                 onChange={handleSortChange}
               >
@@ -292,11 +291,8 @@ function Explore() {
           {/* Filter by Continent Dropdown */}
           <Col md={6}>
             <Form.Group controlId="continentFilter">
-              <Form.Label id="continent-filter-label">
-                Filter by Continent
-              </Form.Label>
+              <Form.Label>Filter by Continent</Form.Label>
               <Form.Select
-                aria-labelledby="continent-filter-label"
                 value={continentFilter}
                 onChange={handleContinentFilterChange}
               >
