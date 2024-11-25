@@ -172,7 +172,6 @@ const Register: React.FC = () => {
                       </span>
                     </OverlayTrigger>
                   </div>
-                  {/* Toggle Switch with Hidden Label */}
                   <div className="d-flex align-items-center mt-2">
                     <Form.Label className="visually-hidden">
                       Enable Venue Manager
