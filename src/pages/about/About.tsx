@@ -24,12 +24,13 @@ function About() {
             <p className="lead mb-4">
               At Holidaze, we believe travel is about connection, discovery, and
               creating unforgettable moments. Whether you're seeking a serene
-              retreat or vibrant city escape, Holidaze has something for everyone.
+              retreat or vibrant city escape, Holidaze has something for
+              everyone.
             </p>
             <p>
               Join our community of travelers and hosts to explore unique stays,
-              experience extraordinary destinations, and share your own space with
-              others looking for adventure. Together, we make every journey
+              experience extraordinary destinations, and share your own space
+              with others looking for adventure. Together, we make every journey
               unforgettable.
             </p>
             <Button
@@ -43,11 +44,10 @@ function About() {
           </Col>
         </Row>
       </section>
-
       {/* Features Section */}
       <section id="features-section">
-        {/* Card Section */}
-        <Row className="text-center mt-4 gy-4">
+        {/* First Row of Cards */}
+        <Row className="text-center mt-5 gy-4 pt-5">
           <Col md={4}>
             <div className="card-wrapper p-3 border rounded bg-light shadow-sm h-100 d-flex flex-column">
               <p className="fs-5 fw-bold">Unique Stays</p>
@@ -72,6 +72,37 @@ function About() {
               <p className="flex-grow-1">
                 Join millions of travelers and hosts who trust Holidaze to make
                 their journeys memorable.
+              </p>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Second Row of Cards */}
+        <Row className="text-center mt-4 gy-4">
+          <Col md={4}>
+            <div className="card-wrapper p-3 border rounded bg-light shadow-sm h-100 d-flex flex-column">
+              <p className="fs-5 fw-bold">Eco-Friendly Stays</p>
+              <p className="flex-grow-1">
+                Explore properties designed with sustainability in mind, helping
+                you travel responsibly.
+              </p>
+            </div>
+          </Col>
+          <Col md={4}>
+            <div className="card-wrapper p-3 border rounded bg-light shadow-sm h-100 d-flex flex-column">
+              <p className="fs-5 fw-bold">Local Experiences</p>
+              <p className="flex-grow-1">
+                Connect with hosts and locals to experience authentic cultures
+                and traditions.
+              </p>
+            </div>
+          </Col>
+          <Col md={4}>
+            <div className="card-wrapper p-3 border rounded bg-light shadow-sm h-100 d-flex flex-column">
+              <p className="fs-5 fw-bold">Flexible Bookings</p>
+              <p className="flex-grow-1">
+                Enjoy peace of mind with options to book and manage your trips
+                flexibly.
               </p>
             </div>
           </Col>
